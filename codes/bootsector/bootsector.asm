@@ -80,7 +80,7 @@ store_remain:
 	out	dx, eax		;out 1f3h, ADDR | 0x40000000
 
 	add	dl, 4
-	mov	ax, 20h
+	mov	al, 20h
 	out	dx, al		;out 1f7h, 20h
 
 	shl	ecx, 8
@@ -91,6 +91,7 @@ waitHDD:
 	jz      waitHDD		;wait next data ready
 
 	sub     dl, 7
+	;rep	insw
 	in      ax, dx		;read next 2 bytes
 	stosw
 	add	dl, 7

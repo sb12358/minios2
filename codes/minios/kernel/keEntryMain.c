@@ -68,6 +68,12 @@ void kdebug(uint32 param)
 				dumpMemory(addr);
 				break;
 			}
+			case 'i':
+			{
+				uint32 addr=htol(&buffer[2]);
+				printf("IO port %04x = %02x \n", addr, _in(addr));
+				break;
+			}
 			case 'a':
 			{
 				uint32 len=htol(&buffer[2]);
@@ -131,8 +137,8 @@ void keEntryMain(uint32 param)
 	pciInit();
 
 	keLoadDriver(&ide_driver_object);
-	ide_readdma(0, 1);
-
+	//ide_readdma(0, 128);
+	ide_readpio4(0x10000, 0, 128);
 	initsemaphore(&s, 0);
 	keNewTask("kdebug", kdebug, 0, 8, 0x4000);
 	keNewTask("test1", test1, 0, 7, 0x4000);
