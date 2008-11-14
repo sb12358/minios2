@@ -117,6 +117,7 @@ unsigned long pciReadConfig(int device_fn, void* buf, int size);
 unsigned long pciWriteConfig(int device_fn, void* buf, int size);
 
 uint32 ide_readdma(uint32 start, uint32 number);
+uint32 ide_readpio4(uint32 buffer, uint32 start, uint32 number);
 
 
 #endif

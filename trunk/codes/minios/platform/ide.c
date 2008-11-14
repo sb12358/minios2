@@ -8,8 +8,7 @@
 #define PRIMARY_CTRL 0x3F6
 #define SECONDARY_ATA 0x170
 #define SECONDARY_CTRL 0x376
-uint16 MASTER_IDE_CTRL =0;
-uint16 SLAVER_IDE_CTRL =0;
+uint16 PCIIDE_CTRL =0;
 
 int32 ide_init();
 pvoid ide_open(int8 *path);
@@ -43,18 +42,42 @@ uint32 ide_readdma(uint32 start, uint32 number)
 {
 	start |= 0x40000000;
 
-	_out(MASTER_IDE_CTRL, 0);
-	_out(MASTER_IDE_CTRL + 2, 0x06);
-	_out32(MASTER_IDE_CTRL + 4, (uint32)&idedmabuf);
+	_out(PCIIDE_CTRL, 0);
+	_out(PCIIDE_CTRL + 2, 0x06);
 
+	_out32(PRIMARY_ATA + 6, 0x40);
 	while((_in(PRIMARY_ATA + 7) & 0x40) == 0)
 		;
-	_out(PRIMARY_CTRL, 0);
 	_out(PRIMARY_ATA + 2, number);
 	_out32(PRIMARY_ATA + 3, start);
 	_out(PRIMARY_ATA + 7, 0xC8);
+	while((_in(PRIMARY_ATA + 7) & 0x0f) == 0)
+		;
 	
-	_out(MASTER_IDE_CTRL, 9);
+	_out(PCIIDE_CTRL, 9);
+	return 0;
+}
+
+uint32 ide_readpio4(uint32 buffer, uint32 start, uint32 number)
+{
+	start |= 0x40000000;
+
+	_out32(PRIMARY_ATA + 6, 0x40);
+	while((_in(PRIMARY_ATA + 7) & 0x40) == 0)
+		;
+	_out(PRIMARY_ATA + 2, number);
+	_out32(PRIMARY_ATA + 3, start);
+	_out(PRIMARY_ATA + 7, 0x20);
+	while((_in(PRIMARY_ATA + 7) & 0x0f) == 0)
+		;
+
+	__asm{
+		mov dx, 1f0h
+		mov edi, buffer
+		mov ecx, number
+		shl ecx, 7
+		rep insd
+	}
 	return 0;
 }
 
@@ -75,9 +98,12 @@ int32 ide_init()
 	{
 		if(cfg->classcode1==1 && cfg->classcode2==1)
 		{
-			MASTER_IDE_CTRL = (uint16)(cfg->baseaddress[4]& ~3);
-			printf("Primary IDE controller's config space %P\n", cfg);
-			printf("Primary IDE controller port %04X\n", MASTER_IDE_CTRL);
+			PCIIDE_CTRL = (uint16)(cfg->baseaddress[4]& ~3);
+			printf("PCI-IDE controller's config space %P io port %04X\n", cfg, PCIIDE_CTRL);
+
+			_out32(PCIIDE_CTRL + 4, (uint32)&idedmabuf);	// Setup dma buffer
+			_out(PRIMARY_CTRL, 0);							// enable interrupt
+
 			return 1;
 		}
 		cfg++;
