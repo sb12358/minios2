@@ -108,6 +108,10 @@ SOURCE=.\platform\console.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\platform\eth.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\platform\ide.c
 # End Source File
 # Begin Source File
@@ -155,6 +159,10 @@ SOURCE=.\libc\stdio.c
 SOURCE=.\libc\string.c
 # End Source File
 # End Group
+# Begin Group "Resource Files"
+
+# PROP Default_Filter "ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"
+# End Group
 # Begin Group "Header Files"
 
 # PROP Default_Filter "h;hpp;hxx;hm;inl"
@@ -186,10 +194,6 @@ SOURCE=.\include\string.h
 
 SOURCE=.\include\types.h
 # End Source File
-# End Group
-# Begin Group "Resource Files"
-
-# PROP Default_Filter "ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"
 # End Group
 # Begin Source File
 

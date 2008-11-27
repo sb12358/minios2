@@ -21,9 +21,9 @@ _ISRINT	dd IsrInt0, IsrInt1, IsrInt2, IsrInt3
 	dd IsrInt12, IsrInt13, IsrInt14, IsrInt15
 
 GDT_DATA db 0,0,0,0,0,0,0,0			;dummy
-	db 0ffh, 0fh, 0, 0, 0, 9Ah, 0C0h, 0	;code seg
-	db 0ffh, 0fh, 0, 0, 0, 92h, 0C0h, 0	;data seg
-GDT_48	dw 0fffh
+	db 0ffh, 0ffh, 0, 0, 0, 9Ah, 0CFh, 0	;code seg
+	db 0ffh, 0ffh, 0, 0, 0, 92h, 0CFh, 0	;data seg
+GDT_48	dw 01ffh
 	dd offset GDT_DATA
 
 IDT_DATA dd 0,0,0,0,0,0,0,0
