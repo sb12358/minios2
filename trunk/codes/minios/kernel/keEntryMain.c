@@ -140,7 +140,7 @@ void keEntryMain(uint32 param)
 	pciInit();
 
 	r=keLoadDriver(&ide_driver_object);
-	//ide_readpio4(0x20000, 0, 128);
+	r=keLoadDriver(&eth_driver_object);
 
 	initsemaphore(&s, 0);
 	keNewTask("kdebug", kdebug, 0, 8, 0x4000);

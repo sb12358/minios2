@@ -37,4 +37,5 @@ int32 status(pvoid device);
 extern struct driver_object console_driver_object;
 extern struct driver_object keyboard_driver_object;
 extern struct driver_object ide_driver_object;
+extern struct driver_object eth_driver_object;
 #endif
