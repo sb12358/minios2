@@ -126,8 +126,11 @@ void test1(uint32 param)
 	}
 }
 
+extern int testcpp();
+
 void keEntryMain(uint32 param)
 {
+	int r;
 	_sti();
 
 	keLoadDriver(&keyboard_driver_object);
@@ -136,16 +139,20 @@ void keEntryMain(uint32 param)
 	keNewTask("dpcmain", keDpcProc, 0, 6, 0x4000);
 	pciInit();
 
-	keLoadDriver(&ide_driver_object);
-	//ide_readdma(0, 128);
-	ide_readpio4(0x10000, 0, 128);
+	r=keLoadDriver(&ide_driver_object);
+	//ide_readpio4(0x20000, 0, 128);
+
 	initsemaphore(&s, 0);
 	keNewTask("kdebug", kdebug, 0, 8, 0x4000);
 	keNewTask("test1", test1, 0, 7, 0x4000);
+
+	r=ide_readdma(0x20000, 0, 128);
+	printf("%d bytes readed\n", r);
 
 	while(1)
 	{
 		keDelay(200);
 		//release(&s);
 	}
+
 }

@@ -115,8 +115,9 @@ typedef struct _PCICFG
 void pciInit();
 unsigned long pciReadConfig(int device_fn, void* buf, int size);
 unsigned long pciWriteConfig(int device_fn, void* buf, int size);
+unsigned long pciWriteConfig32(int device_fn, int addr, int value);
 
-uint32 ide_readdma(uint32 start, uint32 number);
+uint32 ide_readdma(uint32 buffer, uint32 start, uint32 number);
 uint32 ide_readpio4(uint32 buffer, uint32 start, uint32 number);
 
 
