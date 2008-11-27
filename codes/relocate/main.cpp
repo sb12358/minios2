@@ -151,7 +151,7 @@ int main( int argc, char *argv[ ])
 	if(argc<4)
 	{
 		//copybin("minios.dll", "bootsector", "minios.vhd");
-		makedllbin("minios.dll", "bootsector", "minios.vhd", 0x400000);
+		makedllbin("minios.dll", "bootsector", "MS-DOS-flat.vmdk", 0x400000);
 	}
 	else
 	{

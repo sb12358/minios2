@@ -18,6 +18,8 @@ int32 ide_read(pvoid device, uint8 *inbuf, uint32 size);
 int32 ide_ioctrl(pvoid device, uint32 command, uint8 *inbuf, uint32 insize, uint8 *outbuf, uint32 *outsize);
 int32 ide_status(pvoid device);
 
+static struct semaphore waitdma;
+
 struct driver_object ide_driver_object={
 	ide_init, 
 	ide_open,
@@ -34,41 +36,47 @@ struct driver_object ide_driver_object={
 struct _DMABUFDES
 {
 	uint32 base;
-	uint16 eot;
-	uint16 len;
-} idedmabuf = {0x10000, 0x8000, 0};
+	uint32 len;
+} idedmabuf = {0xffff, 0x80000000};
 
-uint32 ide_readdma(uint32 start, uint32 number)
+uint32 ide_readdma(uint32 buffer, uint32 start, uint32 number)
 {
 	start |= 0x40000000;
+	idedmabuf.base = buffer;
 
-	_out(PCIIDE_CTRL, 0);
-	_out(PCIIDE_CTRL + 2, 0x06);
-
-	_out32(PRIMARY_ATA + 6, 0x40);
-	while((_in(PRIMARY_ATA + 7) & 0x40) == 0)
+	while((_in(PRIMARY_ATA + 7) & 0x80) != 0)
 		;
+	_out(PRIMARY_ATA + 6, 0x40);
 	_out(PRIMARY_ATA + 2, number);
 	_out32(PRIMARY_ATA + 3, start);
-	_out(PRIMARY_ATA + 7, 0xC8);
-	while((_in(PRIMARY_ATA + 7) & 0x0f) == 0)
+	while((_in(PRIMARY_ATA + 7) & 0x40) == 0)
 		;
-	
+	_out(PRIMARY_ATA + 7, 0xc8);
+	_out(PCIIDE_CTRL, 0);
+	_out(PCIIDE_CTRL + 2, 0x06);
+	while((_in(PRIMARY_ATA + 7) & 0x08) == 0)
+		;
 	_out(PCIIDE_CTRL, 9);
-	return 0;
+	wait(&waitdma);
+	
+	if(_in(PCIIDE_CTRL + 2) & 2)
+		return 0;
+	if(_in(PCIIDE_CTRL + 2) & 1)
+		return 0x10000;
+	return number<<9;
 }
 
 uint32 ide_readpio4(uint32 buffer, uint32 start, uint32 number)
 {
 	start |= 0x40000000;
 
-	_out32(PRIMARY_ATA + 6, 0x40);
+	_out(PRIMARY_ATA + 6, 0x40);
 	while((_in(PRIMARY_ATA + 7) & 0x40) == 0)
 		;
 	_out(PRIMARY_ATA + 2, number);
 	_out32(PRIMARY_ATA + 3, start);
 	_out(PRIMARY_ATA + 7, 0x20);
-	while((_in(PRIMARY_ATA + 7) & 0x0f) == 0)
+	while((_in(PRIMARY_ATA + 7) & 0x08) == 0)
 		;
 
 	__asm{
@@ -78,12 +86,41 @@ uint32 ide_readpio4(uint32 buffer, uint32 start, uint32 number)
 		shl ecx, 7
 		rep insd
 	}
+
 	return 0;
+}
+
+uint32 ide_readidentify(uint32 buffer)
+{
+	_out(PRIMARY_ATA + 6, 0x40);
+	while((_in(PRIMARY_ATA + 7) & 0x40) == 0)
+		;
+	_out(PRIMARY_ATA + 7, 0xec);
+	while((_in(PRIMARY_ATA + 7) & 0x08) == 0)
+		;
+	__asm{
+		mov dx, 1f0h
+		mov edi, buffer
+		mov ecx, 1
+		shl ecx, 7
+		rep insd
+	}
+}
+
+uint32 ide_setfeture(uint8 feture, uint8 param)
+{
+	_out(PRIMARY_ATA + 6, 0x40);
+	while((_in(PRIMARY_ATA + 7) & 0x40) == 0)
+		;
+	_out(PRIMARY_ATA + 1, feture);
+	_out(PRIMARY_ATA + 2, param);
+	_out(PRIMARY_ATA + 7, 0xef);
+	return 1;
 }
 
 void pfIdeIsr()
 {
-	puts("*****");
+	release(&waitdma);
 }
 
 
@@ -94,6 +131,8 @@ int32 ide_init()
 	_ISRVECT[46]=(uint32)pfIdeIsr;
 	_ISRVECT[47]=(uint32)pfIdeIsr;
 	memset((void*)0x10000, 0, 0x10000);
+	initsemaphore(&waitdma, 0);
+
 	for(i=0;i<256;i++)
 	{
 		if(cfg->classcode1==1 && cfg->classcode2==1)
@@ -101,10 +140,13 @@ int32 ide_init()
 			PCIIDE_CTRL = (uint16)(cfg->baseaddress[4]& ~3);
 			printf("PCI-IDE controller's config space %P io port %04X\n", cfg, PCIIDE_CTRL);
 
+			_out(PRIMARY_CTRL, 2);							// enable interrupt
+			//ide_setfeture(3, 0x22);
+			//ide_readidentify(0x10000);
 			_out32(PCIIDE_CTRL + 4, (uint32)&idedmabuf);	// Setup dma buffer
 			_out(PRIMARY_CTRL, 0);							// enable interrupt
 
-			return 1;
+			return i;
 		}
 		cfg++;
 	}

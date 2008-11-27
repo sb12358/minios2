@@ -54,6 +54,14 @@ unsigned long pciWriteConfig(int device_fn, void* buf, int size)
 	return size & ~3;
 }
 
+unsigned long pciWriteConfig32(int device_fn, int addr, int value)
+{
+	int a=CONFIG_CMD(0, device_fn, addr);
+	_out32(0xCF8, a);
+	_out32(0xCFC, value);
+	return 4;
+}
+
 void pciInit()
 {
 	int i;
@@ -62,7 +70,7 @@ void pciInit()
 	{
 		pciReadConfig(i, p, 64);
 		if(p->vender!=0xffff)
-			printf("Found %d, %d: %s\n", p->classcode1, p->classcode2, classcode[p->classcode1]);
+			printf("Found %d, %d at %08X: %s\n", p->classcode1, p->classcode2, p, classcode[p->classcode1]);
 		p++;
 	}
 }

@@ -18,6 +18,7 @@ CFG=minios - Win32 Release
 !MESSAGE Possible choices for configuration are:
 !MESSAGE 
 !MESSAGE "minios - Win32 Release" (based on "Win32 (x86) Dynamic-Link Library")
+!MESSAGE "minios - Win32 vmware" (based on "Win32 (x86) Dynamic-Link Library")
 !MESSAGE 
 
 # Begin Project
@@ -27,6 +28,9 @@ CFG=minios - Win32 Release
 CPP=xicl6.exe
 MTL=midl.exe
 RSC=rc.exe
+
+!IF  "$(CFG)" == "minios - Win32 Release"
+
 # PROP BASE Use_MFC 0
 # PROP BASE Use_Debug_Libraries 0
 # PROP BASE Output_Dir "Release"
@@ -55,9 +59,46 @@ LINK32=xilink6.exe
 SOURCE="$(InputPath)"
 PostBuild_Cmds="../bin/relocate.exe" ../bin/minios.dll ../bin/bootsector ../bin/minios.vhd
 # End Special Build Tool
+
+!ELSEIF  "$(CFG)" == "minios - Win32 vmware"
+
+# PROP BASE Use_MFC 0
+# PROP BASE Use_Debug_Libraries 0
+# PROP BASE Output_Dir "minios___Win32_vmware"
+# PROP BASE Intermediate_Dir "minios___Win32_vmware"
+# PROP BASE Ignore_Export_Lib 0
+# PROP BASE Target_Dir ""
+# PROP Use_MFC 0
+# PROP Use_Debug_Libraries 0
+# PROP Output_Dir "minios___Win32_vmware"
+# PROP Intermediate_Dir "minios___Win32_vmware"
+# PROP Ignore_Export_Lib 0
+# PROP Target_Dir ""
+# ADD BASE CPP /nologo /MT /W3 /GX /Ot /Ow /Og /Op /Oy /Ob1 /X /I "include" /FR /YX /FD /c
+# ADD CPP /nologo /MT /W3 /GX /Ot /Ow /Og /Op /Oy /Ob1 /X /I "include" /FR /YX /FD /c
+# ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
+# ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
+# ADD BASE RSC /l 0x804 /x /d "NDEBUG"
+# ADD RSC /l 0x804 /x /d "NDEBUG"
+BSC32=bscmake.exe
+# ADD BASE BSC32 /nologo
+# ADD BSC32 /nologo
+LINK32=xilink6.exe
+# ADD BASE LINK32 /nologo /base:"0x400000" /entry:"main" /dll /map:"../bin/minios.map" /machine:I386 /nodefaultlib /out:"../bin/minios.dll"
+# SUBTRACT BASE LINK32 /pdb:none
+# ADD LINK32 /nologo /base:"0x400000" /entry:"main" /dll /map:"../bin/minios.map" /machine:I386 /nodefaultlib /out:"../bin/minios.dll"
+# SUBTRACT LINK32 /pdb:none
+# Begin Special Build Tool
+SOURCE="$(InputPath)"
+PostBuild_Cmds="../bin/relocate.exe" ../bin/minios.dll ../bin/bootsector ../bin/MS-DOS-flat.vmdk
+# End Special Build Tool
+
+!ENDIF 
+
 # Begin Target
 
 # Name "minios - Win32 Release"
+# Name "minios - Win32 vmware"
 # Begin Group "Source Files"
 
 # PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
