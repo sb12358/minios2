@@ -126,15 +126,15 @@ void pfIdeIsr()
 
 int32 ide_init()
 {
-	int i;
-	PCICFG * cfg=PCICFG_POINTER;
+	PCIDEV * dev=PCIDEV_HEADER;
 	_ISRVECT[46]=(uint32)pfIdeIsr;
 	_ISRVECT[47]=(uint32)pfIdeIsr;
 	memset((void*)0x10000, 0, 0x10000);
 	initsemaphore(&waitdma, 0);
 
-	for(i=0;i<256;i++)
+	while(dev!=NULL)
 	{
+		PCICFG *cfg = &dev->cfg;
 		if(cfg->classcode1==1 && cfg->classcode2==1)
 		{
 			PCIIDE_CTRL = (uint16)(cfg->baseaddress[4]& ~3);
@@ -145,10 +145,9 @@ int32 ide_init()
 			//ide_readidentify(0x10000);
 			_out32(PCIIDE_CTRL + 4, (uint32)&idedmabuf);	// Setup dma buffer
 			_out(PRIMARY_CTRL, 0);							// enable interrupt
-
-			return i;
+			return 1;
 		}
-		cfg++;
+		dev=dev->next;
 	}
 	return 0;
 }
