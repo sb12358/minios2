@@ -1,6 +1,7 @@
 #include <platform.h>
 #include <device.h>
 #include <kernel.h>
+#include <string.h>
 
 uint32 htol(char* hexstr)
 {
@@ -28,8 +29,11 @@ uint32 htol(char* hexstr)
 
 void dumpMemory(uint32 addr)
 {
+	uint8 buf[256];
 	int i,j;
-	uint8 * p = (uint8*)addr;
+	uint8 * p;
+	memcpy(buf, (uint8*)addr, 256);
+	p = (uint8*)buf;
 	for(j=0;j<16;j++)
 	{
 		printf("%08X  ", addr+j*16);
@@ -146,8 +150,8 @@ void keEntryMain(uint32 param)
 	keNewTask("kdebug", kdebug, 0, 8, 0x4000);
 	keNewTask("test1", test1, 0, 7, 0x4000);
 
-	r=ide_readdma(0x20000, 0, 128);
-	printf("%d bytes readed\n", r);
+//	r=ide_readdma(0x20000, 0, 128);
+//	printf("%d bytes readed\n", r);
 
 	while(1)
 	{
