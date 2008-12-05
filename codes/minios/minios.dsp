@@ -116,6 +116,10 @@ SOURCE=.\platform\ide.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\kernel\keDebug.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\kernel\keDriverModel.c
 # End Source File
 # Begin Source File

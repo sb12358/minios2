@@ -67,11 +67,16 @@ void generalprotectintr(uint32 edi, uint32 esi, uint32 ebp, uint32 esp,
 		   uint32 ebx, uint32 edx, uint32 ecx, uint32 eax, 
 		   uint32 code, uint32 eip, uint32 cs)
 {
+	int i;
 	_cli();
 	printf("\nGeneral Protect Error\n");
 	printf("eip=%08x ecs=%08x code=%08x\n", eip, cs, code);
 	printf("eax=%08x ebx=%08x ecx=%08x edx=%08x\n", eax, ebx, ecx, edx);
 	printf("esp=%08x ebp=%08x esi=%08x edi=%08x\n", esp, ebp, esi, edi);
+
+	for(i=0;i<16;i++)
+		printf("%08X\t", *(uint32*)esp); 
+
 	while(1);
 }
 
@@ -83,7 +88,7 @@ void _stdcall main(unsigned long p1, unsigned long p2, unsigned long p3)
 
 	_ISRVECT[17]=(uint32)keDoSched;
 	_ISRVECT[32]=(uint32)keTimerIsr;
-	
+
 	_ISRVECT[0x0d]=(uint32)generalprotectintr;
 
 	keKernelHeapInit();

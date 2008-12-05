@@ -92,3 +92,36 @@ _inline void Assert(int exp, char* str)
 	}
 }
 
+struct break_regstat_t
+{
+	uint32 edi;
+	uint32 esi;
+	uint32 ebp;
+	uint32 esp;
+	uint32 ebx;
+	uint32 edx;
+	uint32 ecx;
+	uint32 eax;
+	uint32 eip;
+	uint32 ecs;
+	uint32 eflags;
+};
+
+#define BPSTATE_READY	0
+#define BPSTATE_RESUME	1
+#define BPSTATE_STEP	2
+#define BPSTATE_DISCARD	3
+
+/*
+the return value of the callback function can one of the followings values 
+BPSTATE_READY:		the break point will never be assert again
+BPSTATE_RESUME:		resume the tast until the next breakpoint
+BPSTATE_DISCARD:	excute only one instruction and call back again
+*/
+typedef int(*DEBUGCALLBACK)(struct break_regstat_t *);
+
+
+void initKeDebug();
+int setbreadpoint(uint32 tid, uint32 eip, DEBUGCALLBACK fn);
+void removebreakpoint(int i);
+void dumpMemory(uint32 addr);
