@@ -55,6 +55,23 @@ void dumpMemory(uint32 addr)
 	}
 }
 
+struct semaphore debugevent;
+int debugret=BPSTATE_RESUME;
+
+int breakfunc(struct break_regstat_t * regs)
+{
+	int i;
+	printf("Break Point Asserted\n");
+	printf("eip=%08x ecs=%08x flag=%08x\n", regs->eip, regs->ecs, regs->eflags);
+	printf("eax=%08x ebx=%08x ecx=%08x edx=%08x\n", regs->eax, regs->ebx, regs->ecx, regs->edx);
+	printf("esp=%08x ebp=%08x esi=%08x edi=%08x\n", regs->esp, regs->ebp, regs->esi, regs->edi);
+	for(i=0;i<32;i++)
+		printf("%08X  ", ((uint32*)(regs->esp))[i]);
+	wait(&debugevent);
+	return debugret;
+}
+
+
 void kdebug(uint32 param)
 {
 	char buffer[80];
@@ -76,6 +93,32 @@ void kdebug(uint32 param)
 			{
 				uint32 addr=htol(&buffer[2]);
 				printf("IO port %04x = %02x \n", addr, _in(addr));
+				break;
+			}
+			case 'b':
+			{
+				int b;
+				uint32 procid=htol(&buffer[2]);
+				uint32 addr=htol(&buffer[4]);
+				b=setbreadpoint(procid, addr, breakfunc);
+				break;
+			}
+			case 'n':
+			{
+				debugret=BPSTATE_STEP;
+				release(&debugevent);
+				break;
+			}
+			case 'c':
+			{
+				debugret=BPSTATE_RESUME;
+				release(&debugevent);
+				break;
+			}
+			case 'r':
+			{
+				debugret=BPSTATE_DISCARD;
+				release(&debugevent);
 				break;
 			}
 			case 'a':
@@ -130,15 +173,21 @@ void test1(uint32 param)
 	}
 }
 
-extern int testcpp();
+int f()
+{
+//	printf("Test Debug system\n");
+	return 1;
+}
 
 void keEntryMain(uint32 param)
 {
 	int r;
 	_sti();
 
+	initKeDebug();
 	keLoadDriver(&keyboard_driver_object);
 	keLoadDriver(&console_driver_object);
+
 	printf("booting...\n");
 	keNewTask("dpcmain", keDpcProc, 0, 6, 0x4000);
 	pciInit();
@@ -150,13 +199,13 @@ void keEntryMain(uint32 param)
 	keNewTask("kdebug", kdebug, 0, 8, 0x4000);
 	keNewTask("test1", test1, 0, 7, 0x4000);
 
-//	r=ide_readdma(0x20000, 0, 128);
-//	printf("%d bytes readed\n", r);
+	r=ide_readdma(0x10000, 0, 128);
+	printf("%d bytes readed\n", r);
 
 	while(1)
 	{
+		f();
 		keDelay(200);
-		//release(&s);
+//		release(&s);
 	}
-
 }
