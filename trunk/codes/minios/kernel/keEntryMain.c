@@ -75,6 +75,7 @@ int breakfunc(struct break_regstat_t * regs)
 void kdebug(uint32 param)
 {
 	char buffer[80];
+	initsemaphore(&debugevent, 0);
 	while(1)
 	{
 		printf("> ");
@@ -166,6 +167,10 @@ struct semaphore s;
 
 void test1(uint32 param)
 {
+	int r;
+	r=ide_readdma(0x10000, 0, 128);
+	printf("test ide dma: %d bytes readed\n", r);
+
 	while(1)
 	{
 		wait(&s);
@@ -184,9 +189,9 @@ void keEntryMain(uint32 param)
 	int r;
 	_sti();
 
-	initKeDebug();
 	keLoadDriver(&keyboard_driver_object);
 	keLoadDriver(&console_driver_object);
+	initKeDebug();
 
 	printf("booting...\n");
 	keNewTask("dpcmain", keDpcProc, 0, 6, 0x4000);
@@ -198,9 +203,6 @@ void keEntryMain(uint32 param)
 	initsemaphore(&s, 0);
 	keNewTask("kdebug", kdebug, 0, 8, 0x4000);
 	keNewTask("test1", test1, 0, 7, 0x4000);
-
-	r=ide_readdma(0x10000, 0, 128);
-	printf("%d bytes readed\n", r);
 
 	while(1)
 	{
