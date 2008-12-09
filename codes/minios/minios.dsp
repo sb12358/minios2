@@ -4,7 +4,7 @@
 
 # TARGTYPE "Win32 (x86) Dynamic-Link Library" 0x0102
 
-CFG=minios - Win32 Release
+CFG=minios - Win32 vmware
 !MESSAGE This is not a valid makefile. To build this project using NMAKE,
 !MESSAGE use the Export Makefile command and run
 !MESSAGE 
@@ -13,12 +13,12 @@ CFG=minios - Win32 Release
 !MESSAGE You can specify a configuration when running NMAKE
 !MESSAGE by defining the macro CFG on the command line. For example:
 !MESSAGE 
-!MESSAGE NMAKE /f "minios.mak" CFG="minios - Win32 Release"
+!MESSAGE NMAKE /f "minios.mak" CFG="minios - Win32 vmware"
 !MESSAGE 
 !MESSAGE Possible choices for configuration are:
 !MESSAGE 
-!MESSAGE "minios - Win32 Release" (based on "Win32 (x86) Dynamic-Link Library")
 !MESSAGE "minios - Win32 vmware" (based on "Win32 (x86) Dynamic-Link Library")
+!MESSAGE "minios - Win32 virtualpc" (based on "Win32 (x86) Dynamic-Link Library")
 !MESSAGE 
 
 # Begin Project
@@ -29,38 +29,7 @@ CPP=xicl6.exe
 MTL=midl.exe
 RSC=rc.exe
 
-!IF  "$(CFG)" == "minios - Win32 Release"
-
-# PROP BASE Use_MFC 0
-# PROP BASE Use_Debug_Libraries 0
-# PROP BASE Output_Dir "Release"
-# PROP BASE Intermediate_Dir "Release"
-# PROP BASE Target_Dir ""
-# PROP Use_MFC 0
-# PROP Use_Debug_Libraries 0
-# PROP Output_Dir "Release"
-# PROP Intermediate_Dir "Release"
-# PROP Ignore_Export_Lib 0
-# PROP Target_Dir ""
-# ADD BASE CPP /nologo /MT /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "MINIOS_EXPORTS" /YX /FD /c
-# ADD CPP /nologo /MT /W3 /GX /Ot /Ow /Og /Op /Oy /Ob1 /X /I "include" /FR /YX /FD /c
-# ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
-# ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
-# ADD BASE RSC /l 0x804 /d "NDEBUG"
-# ADD RSC /l 0x804 /x /d "NDEBUG"
-BSC32=bscmake.exe
-# ADD BASE BSC32 /nologo
-# ADD BSC32 /nologo
-LINK32=xilink6.exe
-# ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /machine:I386
-# ADD LINK32 /nologo /base:"0x400000" /entry:"main" /dll /map:"../bin/minios.map" /machine:I386 /nodefaultlib /out:"../bin/minios.dll"
-# SUBTRACT LINK32 /pdb:none
-# Begin Special Build Tool
-SOURCE="$(InputPath)"
-PostBuild_Cmds="../bin/relocate.exe" ../bin/minios.dll ../bin/bootsector ../bin/minios.vhd
-# End Special Build Tool
-
-!ELSEIF  "$(CFG)" == "minios - Win32 vmware"
+!IF  "$(CFG)" == "minios - Win32 vmware"
 
 # PROP BASE Use_MFC 0
 # PROP BASE Use_Debug_Libraries 0
@@ -70,8 +39,8 @@ PostBuild_Cmds="../bin/relocate.exe" ../bin/minios.dll ../bin/bootsector ../bin/
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 0
-# PROP Output_Dir "minios___Win32_vmware"
-# PROP Intermediate_Dir "minios___Win32_vmware"
+# PROP Output_Dir "vmware_Release"
+# PROP Intermediate_Dir "vmware_Release"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MT /W3 /GX /Ot /Ow /Og /Op /Oy /Ob1 /X /I "include" /FR /YX /FD /c
@@ -90,15 +59,48 @@ LINK32=xilink6.exe
 # SUBTRACT LINK32 /pdb:none
 # Begin Special Build Tool
 SOURCE="$(InputPath)"
-PostBuild_Cmds="../bin/relocate.exe" ../bin/minios.dll ../bin/bootsector ../bin/MS-DOS-flat.vmdk
+PostBuild_Cmds="../bin/relocate.exe" ../bin/minios.dll ../bin/bootsector ../bin/minios.img
+# End Special Build Tool
+
+!ELSEIF  "$(CFG)" == "minios - Win32 virtualpc"
+
+# PROP BASE Use_MFC 0
+# PROP BASE Use_Debug_Libraries 0
+# PROP BASE Output_Dir "minios___Win32_virtualpc"
+# PROP BASE Intermediate_Dir "minios___Win32_virtualpc"
+# PROP BASE Ignore_Export_Lib 0
+# PROP BASE Target_Dir ""
+# PROP Use_MFC 0
+# PROP Use_Debug_Libraries 0
+# PROP Output_Dir "minios___Win32_virtualpc"
+# PROP Intermediate_Dir "minios___Win32_virtualpc"
+# PROP Ignore_Export_Lib 0
+# PROP Target_Dir ""
+# ADD BASE CPP /nologo /MT /W3 /GX /Ot /Ow /Og /Op /Oy /Ob1 /X /I "include" /FR /YX /FD /c
+# ADD CPP /nologo /MT /W3 /GX /Ot /Ow /Og /Op /Oy /Ob1 /X /I "include" /FR /YX /FD /c
+# ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
+# ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
+# ADD BASE RSC /l 0x804 /x /d "NDEBUG"
+# ADD RSC /l 0x804 /x /d "NDEBUG"
+BSC32=bscmake.exe
+# ADD BASE BSC32 /nologo
+# ADD BSC32 /nologo
+LINK32=xilink6.exe
+# ADD BASE LINK32 /nologo /base:"0x400000" /entry:"main" /dll /map:"../bin/minios.map" /machine:I386 /nodefaultlib /out:"../bin/minios.dll"
+# SUBTRACT BASE LINK32 /pdb:none
+# ADD LINK32 /nologo /base:"0x400000" /entry:"main" /dll /map:"../bin/minios.map" /machine:I386 /nodefaultlib /out:"../bin/minios.dll"
+# SUBTRACT LINK32 /pdb:none
+# Begin Special Build Tool
+SOURCE="$(InputPath)"
+PostBuild_Cmds="../bin/relocate.exe" ../bin/minios.dll ../bin/bootsector ../bin/minios.img
 # End Special Build Tool
 
 !ENDIF 
 
 # Begin Target
 
-# Name "minios - Win32 Release"
 # Name "minios - Win32 vmware"
+# Name "minios - Win32 virtualpc"
 # Begin Group "Source Files"
 
 # PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
