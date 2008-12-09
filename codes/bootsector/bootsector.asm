@@ -1,8 +1,9 @@
 [ORG 0x7c00]
 [BITS 16]
 start:
-	jmp start_16
-	times 87 db 0		; skip 87 bytes
+	jmp short start_16
+	nop
+	times 59 db 0		; skip 87 bytes
 start_16:
 	cli			; disable interrupt
 	cld			;
