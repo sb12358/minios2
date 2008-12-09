@@ -72,8 +72,8 @@ PostBuild_Cmds="../bin/relocate.exe" ../bin/minios.dll ../bin/bootsector ../bin/
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 0
-# PROP Output_Dir "minios___Win32_virtualpc"
-# PROP Intermediate_Dir "minios___Win32_virtualpc"
+# PROP Output_Dir "virtualpc_Release"
+# PROP Intermediate_Dir "virtualpc_Release"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MT /W3 /GX /Ot /Ow /Og /Op /Oy /Ob1 /X /I "include" /FR /YX /FD /c
