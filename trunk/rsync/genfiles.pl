@@ -153,5 +153,3 @@ appendfile("test3K", 1000);
 benchmark('rsyncto("test3K");');
 
 benchmark('rsyncto("largedir");');
-
-
