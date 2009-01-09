@@ -1,0 +1,15 @@
+generating test10M size 10088030.195523 ... OK
+rsync -zrc --progress test10M rsync://root@192.168.0.100/ftp/
+  time spent 1.673. net send 10093036 bytes, recieve 27 bytes
+appendfile test10M size 1000... OK
+rsync -zrc --progress test10M rsync://root@192.168.0.100/ftp/
+  time spent 1.245. net send 2144 bytes, recieve 19089 bytes
+overwritefile test10M off 1231413 size 1000... OK
+rsync -zrc --progress test10M rsync://root@192.168.0.100/ftp/
+  time spent 1.162. net send 6445 bytes, recieve 19089 bytes
+insertfile test10M off 12379 size 1000... OK
+rsync -zrc --progress test10M rsync://root@192.168.0.100/ftp/
+  time spent 1.086. net send 4269 bytes, recieve 19089 bytes
+overwritefile test10M off 0 size 1000... OK
+rsync -zrc --progress test10M rsync://root@192.168.0.100/ftp/
+  time spent 1.133. net send 3266 bytes, recieve 19089 bytes
