@@ -124,32 +124,6 @@ sub gendir{
 	}
 }
 
-mkdir "largedir";
-gendir "largedir", 100;
-opendir DH, "largedir";
-foreach my $file(readdir DH){
-	next if $file eq "." or $file eq "..";
-	gendir "largedir/".$file, 100;
-	opendir DH2, "largedir/".$file;
-	foreach my $file2(readdir DH2){
-		next if $file2 eq "." or $file2 eq "..";
-		my $path="largedir/".$file."/".$file2;
-		genfile($path."/small", rand(1024));
-	}
-	close DH2;
-}
-close DH;
+$_=1;
 
-genfile("test3K", 3000);
-genfile("test100K", 100000);
-genfile("test10M", 1000*1000*10);
 
-benchmark('rsyncto("test3K");');
-benchmark('rsyncto("test100K");');
-benchmark('rsyncto("test10M");');
-
-insertfile("test3K", 2, 10);
-appendfile("test3K", 1000);
-benchmark('rsyncto("test3K");');
-
-benchmark('rsyncto("largedir");');
