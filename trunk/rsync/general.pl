@@ -93,7 +93,7 @@ sub benchmark{
 # rsyncto path
 sub rsyncto{
 	my $file = $_[0];
-	my $cmd = "rsync -zr --progress $file rsync://root\@192.168.0.100/ftp/";
+	my $cmd = "rsync -zrc --progress $file rsync://root\@192.168.0.100/ftp/";
 	print $cmd."\n";
 	my @result = split(" ", `$cmd | awk '/'sent'/{print \$2,\$5}'`);
 }
@@ -101,7 +101,7 @@ sub rsyncto{
 # rsyncfrom path
 sub rsyncfrom{
 	my $file = $_[0];
-	my $cmd = "rsync -zr --progress rsync://root\@192.168.0.100/ftp/$file $file";
+	my $cmd = "rsync -zrc --progress rsync://root\@192.168.0.100/ftp/$file $file";
 	print $cmd."\n";
 	my @result = split(" ", `$cmd | awk '/'sent'/{print \$2,\$5}'`);
 }
