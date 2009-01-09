@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-require ("genfiles.pl");
+require ("general.pl");
 
 genfile("test10M", 10000000+rand(100000));
 benchmark('rsyncto("test10M");');
