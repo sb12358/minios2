@@ -106,7 +106,19 @@ PostBuild_Cmds="../bin/relocate.exe" ../bin/minios.dll ../bin/bootsector ../bin/
 # PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 # Begin Source File
 
+SOURCE=.\disasm\asmserv.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\disasm\assembl.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\platform\console.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\disasm\disasm.c
 # End Source File
 # Begin Source File
 
@@ -175,6 +187,10 @@ SOURCE=.\libc\string.c
 # Begin Source File
 
 SOURCE=.\include\device.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\include\disasm.h
 # End Source File
 # Begin Source File
 

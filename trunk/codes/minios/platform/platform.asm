@@ -54,14 +54,26 @@ _switch proc
 	mov eax, esp
 	mov esp, [ecx]
 	mov [edx], eax
+	sti
 	ret
 _switch endp
 
-_loadidtgdt proc
+_loadgdt proc
 	lgdt fword ptr[GDT_48]
+	mov eax, cr0
+	and eax, 7fffffffh
+	mov cr0, eax
+	db 0ffh
+	dw 08h
+	dd jump32
+jump32:	
+	ret
+_loadgdt endp
+
+_loadidt proc
 	lidt fword ptr[IDT_48]
 	ret
-_loadidtgdt endp
+_loadidt endp
 
 _in proc
 	mov edx, [esp+4]
@@ -284,6 +296,7 @@ IsrInt0:
 	pushad
 	mov al, 20h
 	out 020h, al
+	out 0A0h, al
 	mov eax, 080h
 	call dword ptr[eax]
 	popad
@@ -293,6 +306,7 @@ IsrInt1:
 	pushad
 	mov al, 20h
 	out 020h, al
+	out 0A0h, al
 	mov eax, 084h
 	call dword ptr[eax]
 	popad
@@ -302,6 +316,7 @@ IsrInt2:
 	pushad
 	mov al, 20h
 	out 020h, al
+	out 0A0h, al
 	mov eax, 088h
 	call dword ptr[eax]
 	popad
@@ -311,6 +326,7 @@ IsrInt3:
 	pushad
 	mov al, 20h
 	out 020h, al
+	out 0A0h, al
 	mov eax, 08ch
 	call dword ptr[eax]
 	popad
@@ -320,6 +336,7 @@ IsrInt4:
 	pushad
 	mov al, 20h
 	out 020h, al
+	out 0A0h, al
 	mov eax, 090h
 	call dword ptr[eax]
 	popad
@@ -329,6 +346,7 @@ IsrInt5:
 	pushad
 	mov al, 20h
 	out 020h, al
+	out 0A0h, al
 	mov eax, 094h
 	call dword ptr[eax]
 	popad
@@ -338,6 +356,7 @@ IsrInt6:
 	pushad
 	mov al, 20h
 	out 020h, al
+	out 0A0h, al
 	mov eax, 098h
 	call dword ptr[eax]
 	popad
@@ -347,6 +366,7 @@ IsrInt7:
 	pushad
 	mov al, 20h
 	out 020h, al
+	out 0A0h, al
 	mov eax, 09ch
 	call dword ptr[eax]
 	popad
@@ -355,6 +375,7 @@ IsrInt7:
 IsrInt8:
 	pushad
 	mov al, 20h
+	out 020h, al
 	out 0A0h, al
 	mov eax, 0a0h
 	call dword ptr[eax]
@@ -364,6 +385,7 @@ IsrInt8:
 IsrInt9:
 	pushad
 	mov al, 20h
+	out 020h, al
 	out 0A0h, al
 	mov eax, 0a4h
 	call dword ptr[eax]
@@ -373,6 +395,7 @@ IsrInt9:
 IsrInt10:
 	pushad
 	mov al, 20h
+	out 020h, al
 	out 0A0h, al
 	mov eax, 0a8h
 	call dword ptr[eax]
@@ -382,6 +405,7 @@ IsrInt10:
 IsrInt11:
 	pushad
 	mov al, 20h
+	out 020h, al
 	out 0A0h, al
 	mov eax, 0ach
 	call dword ptr[eax]
@@ -391,6 +415,7 @@ IsrInt11:
 IsrInt12:
 	pushad
 	mov al, 20h
+	out 020h, al
 	out 0A0h, al
 	mov eax, 0b0h
 	call dword ptr[eax]
@@ -400,6 +425,7 @@ IsrInt12:
 IsrInt13:
 	pushad
 	mov al, 20h
+	out 020h, al
 	out 0A0h, al
 	mov eax, 0b4h
 	call dword ptr[eax]
@@ -409,6 +435,7 @@ IsrInt13:
 IsrInt14:
 	pushad
 	mov al, 20h
+	out 020h, al
 	out 0A0h, al
 	mov eax, 0b8h
 	call dword ptr[eax]
@@ -418,6 +445,7 @@ IsrInt14:
 IsrInt15:
 	pushad
 	mov al, 20h
+	out 020h, al
 	out 0A0h, al
 	mov eax, 0bch
 	call dword ptr[eax]

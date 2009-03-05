@@ -311,3 +311,109 @@ char * strtok(char * string,const char * separator)
 	static char *last = 0;
 	return (strtok_r (string, separator, &last));
 }
+
+int isalpha(int c)
+{
+	if(c>='a' && c<='z' || c>='A' && c<='Z')
+		return 1;
+	else
+		return 0;
+}
+
+int isalnum(int c)
+{
+	if(c>='a' && c<='z' || c>='A' && c<='Z' || c>='0' && c<='9')
+		return 1;
+	else
+		return 0;
+}
+
+int isdigit(int c)
+{
+	if(c>='0' && c<='9')
+		return 1;
+	else
+		return 0;
+}
+
+int isxdigit(int c)
+{
+	if(c>='a' && c<='f' || c>='A' && c<='F' || c>='0' && c<='9')
+		return 1;
+	else
+		return 0;
+}
+
+
+int toupper(int c)
+{
+	if(c>='a' && c<='z')
+		return c-'a'+'A';
+	else
+		return c;
+}
+
+int tolower(int c)
+{
+	if(c>='A' && c<='Z')
+		return c-'A'+'a';
+	else
+		return c;
+}
+
+char* strupr(char *s)
+{
+	char *p=s;
+	while(*p)
+	{
+		if((*p)>='a' && (*p)<='z')
+			(*p)=(*p)-'a'+'A';
+		p++;
+	}
+	return s;
+}
+
+char* strlwr(char *s)
+{
+	char *p=s;
+	while(*p)
+	{
+		if((*p)>='A' && (*p)<='Z')
+			(*p)=(*p)-'A'+'a';
+		p++;
+	}
+	return s;
+}
+
+int strnicmp(const char *s1, const char *s2, unsigned int n)
+{
+	if (n == 0)
+	return (0);
+	while (tolower(*s1++) == tolower(*s2++))
+	{
+		if ((s1 [-1] == 0) || (--n == 0))
+			return (0);
+	}
+
+	return ((s1 [-1]) - (s2 [-1]));
+}
+
+int memicmp(const void *s1, const void *s2, unsigned int n)
+{
+	const unsigned char *p1;
+	const unsigned char *p2;
+
+	if (n == 0)
+	return (0);
+
+	p1 = s1;
+	p2 = s2;
+
+	while (tolower(*p1++) == tolower(*p2++))
+	{
+		if (--n == 0)
+			return (0);
+	}
+
+	return ((*--p1) - (*--p2));
+}

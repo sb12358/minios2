@@ -18,7 +18,7 @@ int32 ide_read(pvoid device, uint8 *inbuf, uint32 size);
 int32 ide_ioctrl(pvoid device, uint32 command, uint8 *inbuf, uint32 insize, uint8 *outbuf, uint32 *outsize);
 int32 ide_status(pvoid device);
 
-static struct semaphore waitdma;
+struct semaphore waitdma;
 
 struct driver_object ide_driver_object={
 	ide_init, 
@@ -58,7 +58,6 @@ uint32 ide_readdma(uint32 buffer, uint32 start, uint32 number)
 		;
 	_out(PCIIDE_CTRL, 9);
 	wait(&waitdma);
-	
 	if(_in(PCIIDE_CTRL + 2) & 2)
 		return 0;
 	if(_in(PCIIDE_CTRL + 2) & 1)

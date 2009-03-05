@@ -19,7 +19,8 @@ extern IDT IDT_DATA[64];
 extern char GDT_DATA[24];
 
 void dummyIsr();
-void _loadidtgdt();
+void _loadgdt();
+void _loadidt();
 uint8 _in(uint32 addr);
 void _out(uint32 addr, uint32 value);
 uint16 _in16(uint32 addr);

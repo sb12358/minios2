@@ -5,15 +5,36 @@
 
 uint32 *_ISRVECT=0;
 
-void pfDummyIsr()
+void pfDummyIsr(uint32 a)
 {
-	puts("*");
+	printf("eip=%08x\n", *(&a-1));
+}
+
+void generalprotectintr(uint32 edi, uint32 esi, uint32 ebp, uint32 esp,
+		   uint32 ebx, uint32 edx, uint32 ecx, uint32 eax, 
+		   uint32 code, uint32 eip, uint32 cs)
+{
+	int i;
+	_cli();
+	printf("\nGeneral Protect Error\n");
+	printf("tid=%d\n", currentTaskId);
+	printf("eip=%08x ecs=%08x code=%08x\n", eip, cs, code);
+	printf("eax=%08x ebx=%08x ecx=%08x edx=%08x\n", eax, ebx, ecx, edx);
+	printf("esp=%08x ebp=%08x esi=%08x edi=%08x\n", esp, ebp, esi, edi);
+	printf("Dump Stack:\n");
+	for(i=0;i<16;i++)
+		printf("%08X  ", ((uint32*)esp)[i+3]); 
+	printf("Dump TCB:\n");
+	for(i=0;i<16;i++)
+		printf("%08X  ", ((uint32*)tasks[currentTaskId])[i]); 
+	while(1);
 }
 
 void cpuInit()
 {
 	int i;
 
+	_loadgdt();
 	while(_in(0x64) & 2);	// wait for input buffer empty
 	_out(0x64, 0xd1);		// want write to 8042 p2 port
 	while(_in(0x64) & 2);	// wait for input buffer empty
@@ -58,38 +79,20 @@ void cpuInit()
 	}
 	
 	for(i=0;i<256;i++)
-		_ISRVECT[i]=(uint32)pfDummyIsr;
+		_ISRVECT[i]=(uint32)generalprotectintr;
 							// init interrupt table
-	_loadidtgdt();
-}
-
-void generalprotectintr(uint32 edi, uint32 esi, uint32 ebp, uint32 esp,
-		   uint32 ebx, uint32 edx, uint32 ecx, uint32 eax, 
-		   uint32 code, uint32 eip, uint32 cs)
-{
-	int i;
-	_cli();
-	printf("\nGeneral Protect Error\n");
-	printf("eip=%08x ecs=%08x code=%08x\n", eip, cs, code);
-	printf("eax=%08x ebx=%08x ecx=%08x edx=%08x\n", eax, ebx, ecx, edx);
-	printf("esp=%08x ebp=%08x esi=%08x edi=%08x\n", esp, ebp, esi, edi);
-
-	for(i=0;i<16;i++)
-		printf("%08X\t", *(uint32*)esp); 
-
-	while(1);
+	_loadidt();
 }
 
 void _stdcall main(unsigned long p1, unsigned long p2, unsigned long p3)
 {
 	uint32 *oldesp;
 	struct taskblock *task;
+	_cli();
 	cpuInit();
 
 	_ISRVECT[17]=(uint32)keDoSched;
 	_ISRVECT[32]=(uint32)keTimerIsr;
-
-	_ISRVECT[0x0d]=(uint32)generalprotectintr;
 
 	keKernelHeapInit();
 	keInitTaskSystem();

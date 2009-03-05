@@ -205,7 +205,6 @@ void keDoSched()
 	}
 	j=currentTaskId;
 	currentTaskId=i;
-	_sti();
 	_switch(&(tasks[i]->esp), &(tasks[j]->esp));
 }
 
