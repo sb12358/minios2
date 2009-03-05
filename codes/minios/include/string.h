@@ -21,4 +21,18 @@ char*	strstr(const char * s, const char * find);
 char*	strrchr(const char * s, int c);
 char*	strtok(char * string,const char * separator);
 
+int		isalpha(int c);
+int		isalnum(int c);
+int		isdigit(int c);
+int		isxdigit(int c);
+int		toupper(int c);
+int		tolower(int c);
+
+char*	strupr(char *s);
+char*	strlwr(char *s);
+
+int strnicmp( const char *string1, const char *string2, unsigned int count );
+int memicmp( const void *buf1, const void *buf2, unsigned int count );
+
+
 #endif

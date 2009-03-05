@@ -2,6 +2,7 @@
 #include <device.h>
 #include <kernel.h>
 #include <string.h>
+#include <disasm.h>
 
 uint32 htol(char* hexstr)
 {
@@ -57,20 +58,26 @@ void dumpMemory(uint32 addr)
 
 struct semaphore debugevent;
 int debugret=BPSTATE_RESUME;
+t_disasm da;
 
 int breakfunc(struct break_regstat_t * regs)
 {
 	int i;
-	printf("Break Point Asserted\n");
+
+	printf("\nBreak Point Asserted\n");
 	printf("eip=%08x ecs=%08x flag=%08x\n", regs->eip, regs->ecs, regs->eflags);
 	printf("eax=%08x ebx=%08x ecx=%08x edx=%08x\n", regs->eax, regs->ebx, regs->ecx, regs->edx);
 	printf("esp=%08x ebp=%08x esi=%08x edi=%08x\n", regs->esp, regs->ebp, regs->esi, regs->edi);
-	for(i=0;i<32;i++)
-		printf("%08X  ", ((uint32*)(regs->esp))[i]);
+	for(i=0;i<16;i++)
+		printf("%08X  ", ((uint32*)regs->esp)[i+3]);
+
+	Disasm((uint8*)regs->eip, 10, regs->eip, &da, DISASM_CODE);
+	printf("%08x %-12s %s\n\n", regs->eip, da.dump, da.result);
+	printf("> ");
+
 	wait(&debugevent);
 	return debugret;
 }
-
 
 void kdebug(uint32 param)
 {
@@ -93,7 +100,7 @@ void kdebug(uint32 param)
 			case 'i':
 			{
 				uint32 addr=htol(&buffer[2]);
-				printf("IO port %04x = %02x \n", addr, _in(addr));
+				printf("IO port %04x = %08x \n", addr, _in32(addr));
 				break;
 			}
 			case 'b':
@@ -140,12 +147,16 @@ void kdebug(uint32 param)
 				keKernelHeapDump();
 				break;
 			case '?':
-				puts("a size: Alloc size Memory From Kernel Heap\n");
-				puts("d addr: Dump Memory Around Address addr\n");
-				puts("f addr: Free Memory at addr From Kernel Heap\n");
-				puts("h: View Kernel Heap Assignmemt\n");
-				puts("k id: Terminate The Task id\n");
-				puts("t: Show Task List\n");
+				puts("a size      Alloc size Memory From Kernel Heap\n");
+				puts("d addr      Dump Memory Around Address addr\n");
+				puts("f addr      Free Memory at addr From Kernel Heap\n");
+				puts("h           View Kernel Heap Assignmemt\n");
+				puts("k id        Terminate The Task id\n");
+				puts("t           Show Task List\n");
+				puts("b id addr   Set break point at addr for task id\n");
+				puts("n           debug next step\n");
+				puts("c           debug continue run\n");
+				puts("r           debug continue and remove the break point\n");
 				break;
 			case 'k':
 				{
@@ -169,7 +180,7 @@ void test1(uint32 param)
 {
 	int r;
 	r=ide_readdma(0x10000, 0, 128);
-	printf("test ide dma: %d bytes readed\n", r);
+	printf("%d bytes readed\n", r);
 
 	while(1)
 	{
@@ -198,12 +209,11 @@ void keEntryMain(uint32 param)
 	pciInit();
 
 	r=keLoadDriver(&ide_driver_object);
-	r=keLoadDriver(&eth_driver_object);
+//	r=keLoadDriver(&eth_driver_object);
 
 	initsemaphore(&s, 0);
 	keNewTask("kdebug", kdebug, 0, 8, 0x4000);
 	keNewTask("test1", test1, 0, 7, 0x4000);
-
 	while(1)
 	{
 		f();
