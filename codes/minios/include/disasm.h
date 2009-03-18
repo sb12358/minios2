@@ -23,15 +23,6 @@
 #define unique
 #endif
 
-// If you prefere Borland, this will force necessary setting (but, as a side
-// effect, may cause plenty of warnings if other include files will be compiled
-// with different options):
-
-#ifdef __BORLANDC__
-#pragma option -K                      // Unsigned char
-#endif
-
-
 #define NEGLIMIT       (-16384)        // Limit to display constans as signed
 #define PSEUDOOP       128             // Base for pseudooperands
 #define TEXTLEN        256             // Maximal length of text string
@@ -139,10 +130,10 @@ typedef struct t_addrdec {
 typedef struct t_cmddata {
   ulong          mask;                 // Mask for first 4 bytes of the command
   ulong          code;                 // Compare masked bytes with this
-  uchar           len;                  // Length of the main command code
-  uchar           bits;                 // Special bits within the command
-  uchar           arg1,arg2,arg3;       // Types of possible arguments
-  uchar           type;                 // C_xxx + additional information
+  uchar          len;                  // Length of the main command code
+  uchar          bits;                 // Special bits within the command
+  uchar          arg1,arg2,arg3;       // Types of possible arguments
+  uchar          type;                 // C_xxx + additional information
   char           *name;                // Symbolic name for this command
 } t_cmddata;
 
@@ -292,8 +283,8 @@ typedef struct t_disasm {              // Results of disassembling
 } t_disasm;
 
 typedef struct t_asmmodel {            // Model to search for assembler command
-  uchar           code[MAXCMDSIZE];     // Binary code
-  uchar           mask[MAXCMDSIZE];     // Mask for binary code (0: bit ignored)
+  uchar          code[MAXCMDSIZE];     // Binary code
+  uchar          mask[MAXCMDSIZE];     // Mask for binary code (0: bit ignored)
   int            length;               // Length of code, bytes (0: empty)
   int            jmpsize;              // Offset size if relative jump
   int            jmpoffset;            // Offset relative to IP
@@ -321,11 +312,11 @@ unique int       stackalign;           // Accept unaligned stack operations
 unique int       iswindowsnt;          // When checking for dangers, assume NT
 
 int    Assemble(char *cmd,ulong ip,t_asmmodel *model,int attempt,
-         int constsize,char *errtext);
+int	   constsize,char *errtext);
 int    Checkcondition(int code,ulong flags);
 int    Decodeaddress(ulong addr,char *symb,int nsymb,char *comment);
 ulong  Disasm(char *src,ulong srcsize,ulong srcip,
-         t_disasm *disasm,int disasmmode);
+t_disasm *disasm,int disasmmode);
 ulong  Disassembleback(char *block,ulong base,ulong size,ulong ip,int n);
 ulong  Disassembleforward(char *block,ulong base,ulong size,ulong ip,int n);
 int    Isfilling(ulong addr,char *data,ulong size,ulong align);

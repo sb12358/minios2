@@ -11,10 +11,10 @@ RW 16384 FLAT "minios.img" 0
 # The Disk Data Base 
 #DDB
 
-ddb.virtualHWVersion = "7"
-ddb.uuid = "60 00 C2 9a 1f a3 1e 9d-8f fa cb 05 26 4e 26 42"
-ddb.geometry.cylinders = "16"
-ddb.geometry.heads = "16"
-ddb.geometry.sectors = "63"
-ddb.adapterType = "ide"
 ddb.toolsVersion = "0"
+ddb.adapterType = "ide"
+ddb.geometry.sectors = "63"
+ddb.geometry.heads = "16"
+ddb.geometry.cylinders = "16"
+ddb.uuid = "60 00 C2 9a 1f a3 1e 9d-8f fa cb 05 26 4e 26 42"
+ddb.virtualHWVersion = "7"
