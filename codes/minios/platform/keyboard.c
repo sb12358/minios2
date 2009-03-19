@@ -26,6 +26,7 @@ struct device_object keyboard_device_object={
 };
 
 pvoid stdin = &keyboard_device_object;
+void console_setscreen(int index);
 
 uint8 keyboardQueue[256];
 uint8 keyboardHead=0;
@@ -129,6 +130,12 @@ uint8 keyboardGetChar()
 
 		switch (key)
 		{
+		case 0x3B:
+		case 0x3C:
+		case 0x3D:
+		case 0x3E:
+			console_setscreen(key-0x3B);
+			break;
 		case 0x1D:		// L Ctrl
 			ctrl_pressed=pressed;
 			break;

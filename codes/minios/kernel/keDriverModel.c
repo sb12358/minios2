@@ -28,61 +28,75 @@ pvoid open(int8* driver, int8 *path)
 
 void close(pvoid device)
 {
-	struct driver_object *driver=((struct device_object*)device)->driver;
-	if(driver->close)
-		driver->close(device);
+	struct device_object *dev = (struct device_object*)device;
+	if(dev==0)
+		return;
+	if(dev->driver->close)
+		dev->driver->close(dev->extend);
 }
 
 int32 read(pvoid device, uint8 *inbuf, uint32 size)
 {
-	struct driver_object *driver=((struct device_object*)device)->driver;
-	if(driver->read)
-		return driver->read(device, inbuf, size);
+	struct device_object *dev = (struct device_object*)device;
+	if(dev==0)
+		return 0;
+	if(dev->driver->read)
+		return dev->driver->read(dev->extend, inbuf, size);
 	else
 		return 0;
 }
 
 int32 write(pvoid device, uint8 *outbuf, uint32 size)
 {
-	struct driver_object *driver=((struct device_object*)device)->driver;
-	if(driver->write)
-		return driver->write(device, outbuf, size);
+	struct device_object *dev = (struct device_object*)device;
+	if(dev==0)
+		return 0;
+	if(dev->driver->write)
+		return dev->driver->write(dev->extend, outbuf, size);
 	else
 		return 0;
 }
 
 int32 seek(pvoid device, uint32 offset)
 {
-	struct driver_object *driver=((struct device_object*)device)->driver;
-	if(driver->seek)
-		return driver->seek(device, offset);
+	struct device_object *dev = (struct device_object*)device;
+	if(dev==0)
+		return 0;
+	if(dev->driver->seek)
+		return dev->driver->seek(dev->extend, offset);
 	else
 		return 0;
 }
 
 int32 tell(pvoid device)
 {
-	struct driver_object *driver=((struct device_object*)device)->driver;
-	if(driver->tell)
-		return driver->tell(device);
+	struct device_object *dev = (struct device_object*)device;
+	if(dev==0)
+		return 0;
+	if(dev->driver->tell)
+		return dev->driver->tell(dev->extend);
 	else
 		return 0;
 }
 
 int32 ioctrl(pvoid device, uint32 command, uint8 *inbuf, uint32 insize, uint8 *outbuf, uint32 *outsize)
 {
-	struct driver_object *driver=((struct device_object*)device)->driver;
-	if(driver->ioctrl)
-		return driver->ioctrl(device, command, inbuf, insize, outbuf, outsize);
+	struct device_object *dev = (struct device_object*)device;
+	if(dev==0)
+		return 0;
+	if(dev->driver->ioctrl)
+		return dev->driver->ioctrl(dev->extend, command, inbuf, insize, outbuf, outsize);
 	else
 		return 0;
 }
 
 int32 status(pvoid device)
 {
-	struct driver_object *driver=((struct device_object*)device)->driver;
-	if(driver->status)
-		return driver->status(device);
+	struct device_object *dev = (struct device_object*)device;
+	if(dev==0)
+		return 0;
+	if(dev->driver->status)
+		return dev->driver->status(dev->extend);
 	else
 		return 0;
 }

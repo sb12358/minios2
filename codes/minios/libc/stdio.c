@@ -1,4 +1,5 @@
 #include <device.h>
+#include <kernel.h>
 #include <string.h>
 #include <stdarg.h>
 
@@ -182,7 +183,13 @@ int sprintf( char *buffer, const char *fmt, ...)
 	return vsprintf(buffer, fmt, arglist);
 }
 
-extern pvoid stdout;
+struct taskblock **tasks;
+uint32 currentTaskId;
+
+void stdwrite(char* buf, int len)
+{
+	write(tasks[currentTaskId]->std[0], buf, len);
+}
 
 int printf(char *fmt, ...)
 {
@@ -191,14 +198,14 @@ int printf(char *fmt, ...)
 	va_list arglist;
 	va_start(arglist, fmt);
 	len=vsprintf(buffer, fmt, arglist);
-	write(stdout, buffer, len);
+	stdwrite(buffer, len);
 	return len;
 }
 
 int puts(char *str)
 {
 	int len=strlen(str);
-	write(stdout, str, len);
+	stdwrite(str, len);
 	return len;
 }
 
@@ -207,28 +214,29 @@ extern pvoid stdin;
 char* gets(char*buf)
 {
 	int len=0;
-	uint8 ch;
+	uint8 ch=0;
 
-	read(stdin, &ch, 1);
-	while(ch!='\n')
+	read(tasks[currentTaskId]->std[1], &ch, 1);
+	while(ch!='\n' && ch!=0)
 	{
 		if(ch=='\b')
 		{
 			if(len>0)
 			{
 				len--;
-				write(stdout, &ch, 1);
+				stdwrite(&ch, 1);
 			}
 			read(stdin, &ch, 1);
 		}else
 		{
 			buf[len++]=ch;
-			write(stdout, &ch, 1);
-			read(stdin, &ch, 1);
+			stdwrite(&ch, 1);
+			read(tasks[currentTaskId]->std[1], &ch, 1);
 		}
 	}
 	buf[len++]=ch;
 	buf[len]=0;
-	write(stdout, &ch, 1);
+	if(ch)
+		stdwrite(&ch, 1);
 	return buf;
 }

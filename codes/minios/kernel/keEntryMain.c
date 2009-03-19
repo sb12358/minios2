@@ -82,6 +82,8 @@ int breakfunc(struct break_regstat_t * regs)
 void kdebug(uint32 param)
 {
 	char buffer[80];
+	keSetStd(0, open("console", "0"));
+	keSetStd(1, open("keyboard", NULL));
 	initsemaphore(&debugevent, 0);
 	while(1)
 	{
@@ -189,12 +191,6 @@ void test1(uint32 param)
 	}
 }
 
-int f()
-{
-//	printf("Test Debug system\n");
-	return 1;
-}
-
 void keEntryMain(uint32 param)
 {
 	int r;
@@ -202,6 +198,9 @@ void keEntryMain(uint32 param)
 
 	keLoadDriver(&keyboard_driver_object);
 	keLoadDriver(&console_driver_object);
+	keSetStd(0, open("console", "1"));
+	keSetStd(1, 0);
+
 	initKeDebug();
 
 	printf("booting...\n");
@@ -209,15 +208,14 @@ void keEntryMain(uint32 param)
 	pciInit();
 
 	r=keLoadDriver(&ide_driver_object);
-//	r=keLoadDriver(&eth_driver_object);
+	r=keLoadDriver(&eth_driver_object);
 
 	initsemaphore(&s, 0);
 	keNewTask("kdebug", kdebug, 0, 8, 0x4000);
 	keNewTask("test1", test1, 0, 7, 0x4000);
 	while(1)
 	{
-		f();
 		keDelay(200);
-//		release(&s);
+		release(&s);
 	}
 }

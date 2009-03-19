@@ -20,7 +20,7 @@ struct driver_object
 struct device_object
 {
 	struct driver_object* driver;
-	pvoid device_data;
+	pvoid extend;
 };
 
 int32 keLoadDriver(struct driver_object *driver);
