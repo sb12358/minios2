@@ -1,4 +1,5 @@
 #include <platform.h>
+#include <device.h>
 #include <kernel.h>
 #include <string.h>
 
@@ -134,6 +135,8 @@ struct taskblock* keNewTask(char *name, TASK_ENTRY entry, uint32 param, uint32 p
 	tasks[i]=keMalloc(stacksize+sizeof(struct taskblock));
 	newtask=tasks[i];
 	newtask->next=NULL;
+	newtask->std[0] = tasks[currentTaskId]->std[0];
+	newtask->std[1] = tasks[currentTaskId]->std[1];
 	newtask->taskid=i;
 	newtask->priority=priority;
 	newtask->queue=NULL;
@@ -221,4 +224,11 @@ void keShowTasks()
 				printf("Task%d name=\"%s\" status=%d tb=%08x ip=%08x\n",i, tasks[i]->taskname, tasks[i]->status, tasks[i], tasks[i]->esp[12]);
 		}
 	}
+}
+
+pvoid keSetStd(int i, pvoid device)
+{
+	pvoid old=tasks[currentTaskId]->std[i];
+	tasks[currentTaskId]->std[i]=device;
+	return old;
 }

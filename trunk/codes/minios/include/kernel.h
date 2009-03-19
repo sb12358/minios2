@@ -32,6 +32,7 @@ struct taskblock
 	uint32 priority;
 	uint32 taskid;
 	uint32 status;
+	pvoid  std[2];
 	struct taskblock *next;
 	struct taskblock ** queue;
 	char stacks[0];
@@ -50,6 +51,7 @@ struct taskblock* keNewTask(char *name, TASK_ENTRY entry, uint32 param, uint32 p
 void keDoSched();
 void keKillTask(uint32 taskid);
 void keShowTasks();
+pvoid keSetStd(int i, pvoid device);
 
 void keTaskEnqueue(struct taskblock ** header, struct taskblock *data);
 struct taskblock * keTaskDequeue(struct taskblock ** header);

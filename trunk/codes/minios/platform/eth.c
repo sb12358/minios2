@@ -33,29 +33,30 @@ struct DEC21140_Descriptor_t
 	uint32 address2;
 };
 struct DEC21140_Descriptor_t recvdesc[8];
-struct DEC21140_Descriptor_t senddesc[8];
+struct DEC21140_Descriptor_t senddesc[1];
 
 void ethisr_handler()
 {
-//	uint32 status;
-	
-//	printf("(");
-//	status =_in32(ETH_CTRL + CSR5);
-//	_out32(ETH_CTRL+CSR6, 0x028C2042);
-//	_out32(status | 0x0001ffff, ETH_CTRL + CSR5);
-//	_out32(ETH_CTRL+CSR4, (uint32)&senddesc[1]);
-//	_out32(ETH_CTRL+CSR7, 0);
-//	_out32(ETH_CTRL+CSR6, 0x028C0042);
+	int i;
+	uint32 status;
+	status =_in32(ETH_CTRL + CSR5);
+	_out32(status | 0x0001ffff, ETH_CTRL + CSR5);
+	_out32(ETH_CTRL+CSR7, 0);
 
-//	if(status & 0x5)
-//		return;
 
-//	keDelay(100);
-//	printf(")");
+	for(i=0;i<8;i++)
+	{
+		printf("%08x ", recvdesc[i].status);
+	}
+/*	recvdesc[15].control = recvdesc[7].control | 0x02000000;
+
+	_out32(ETH_CTRL+CSR3, (uint32)recvdesc);
+*/
 }
 
 int32 eth_init()
 {
+	int cmd=0;
 	int bus=0;
 	PCIDEV *dev =PCIDEV_HEADER;
 	
@@ -75,32 +76,32 @@ int32 eth_init()
 				cfg->romaddr |= 0x1;
 				pciWriteConfig32 (dev->bus, dev->devicefn, 0x30, cfg->romaddr);
 			}
-
+			pciWriteConfig8(dev->bus, dev->devicefn, 0x43, 0);
+			keDelay(2);  /* Ensure we're not sleeping. */
 			_ISRVECT[dev->cfg.interruptline+0x20]=(uint32)ethisr_handler;
 
 			memset(recvdesc, 0, sizeof(recvdesc));
-			recvbuf=(uint8*)keMalloc(2048*8);
+			recvbuf=(uint8*)keMalloc(1600*8);
 			for(i=0;i<8;i++)
 			{
 				recvdesc[i].status=0x80000000;
-				recvdesc[i].control=2048;
-				recvdesc[i].address1=(uint32)(recvbuf+i*2048);
+				recvdesc[i].control=1600;
+				recvdesc[i].address1=(uint32)(recvbuf+i*1600);
 				recvdesc[i].address2=0;
 			}
-			recvdesc[7].control = recvdesc[7].control | 0x01000000;
-			recvdesc[7].address2 = recvdesc;
 
 			memset(senddesc, 0, sizeof(senddesc));
-			sendbuf=(uint8*)keMalloc(2048*8);
-			for(i=0;i<8;i++)
+			sendbuf=(uint8*)keMalloc(1600*1);
+			for(i=0;i<1;i++)
 			{
 				senddesc[i].status=0;
 				senddesc[i].control=0;
-				senddesc[i].address1=(uint32)(sendbuf+i*2048);
-				senddesc[i].address2=0;
+				senddesc[i].address1=(uint32)(sendbuf+i*1600);
+				senddesc[i].address2=(uint32)&senddesc[(i+1)%1];
 			}
-			senddesc[0].status=0x80000000;
-			senddesc[0].control=0x880000C0;
+			recvdesc[7].control = recvdesc[7].control | 0x02000000;
+			senddesc[1].control = senddesc[1].control | 0x02000000;
+/*
 			{
 				int i;
 				uint32 *setup_frm = (uint32*)sendbuf;
@@ -114,18 +115,16 @@ int32 eth_init()
 					*setup_frm++ = 0x9d19;
 				}
 			}
+*/
 			printf("rcv buf %08x snd buf %08x\n", recvdesc, senddesc);
 
-			_out32(ETH_CTRL+CSR0, 0xfe000000);
-			_out32(ETH_CTRL+CSR2, 0);
 			_out32(ETH_CTRL+CSR3, (uint32)recvdesc);
 			_out32(ETH_CTRL+CSR4, (uint32)senddesc);
 			
-			_out32(ETH_CTRL+CSR5, 0xFC660000);
 			_out32(ETH_CTRL+CSR7, 0xffffa85b);
-			_out32(ETH_CTRL+CSR6, 0x328C2040);
 
-
+			cmd=_in32(ETH_CTRL+CSR6);
+			_out32(ETH_CTRL+CSR6, cmd | 0x00000082);
 			return 1;
 		}
 		dev=dev->next;
