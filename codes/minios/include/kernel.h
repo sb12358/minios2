@@ -89,6 +89,7 @@ _inline void Assert(int exp, char* str)
 	if(!exp)
 	{
 		puts(str);
+		keKernelHeapDump();
 		keKillTask(currentTaskId);
 		while(1);
 	}
