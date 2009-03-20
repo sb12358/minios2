@@ -40,7 +40,14 @@ int tx_new=0;
 
 void sendpacket(uint8* buffer, int size)
 {
-
+	_cli();
+	senddesc[tx_new].address1=(uint32)buffer;
+	senddesc[tx_new].control = 0xE0000000 + size;
+	senddesc[tx_new].status |= 0x80000000;
+	tx_new++;
+	tx_new%=8;
+	_sti();
+	_out32(ETH_CTRL+CSR1, 0);
 }
 
 
@@ -61,6 +68,8 @@ void ethisr_handler()
 				continue;
 			if(senddesc[i].address1)
 			{
+				if(senddesc[i].status & 0x8000)
+					printf("Error %08x ", senddesc[i].status);
 				printf("Free %08x %08x", &(senddesc[i].address1), senddesc[i].address1);
 				keFree((void*)senddesc[i].address1);
 				senddesc[i].address1=0;
@@ -130,6 +139,7 @@ int32 eth_init()
 			_out32(ETH_CTRL+CSR3, (uint32)recvdesc);
 			_out32(ETH_CTRL+CSR4, (uint32)senddesc);
 			_out32(ETH_CTRL+CSR7, 0xffffffff);
+			_out32(ETH_CTRL+CSR6, cmd | 0x00002082);
 
 			{
 				int i;
@@ -140,6 +150,7 @@ int32 eth_init()
 				senddesc[tx_new].control = 0x88000000;
 				senddesc[tx_new].status |= 0x80000000;
 				tx_new++;
+				tx_new%=8;
 				_sti();
 
 				*setup_frm++ = 0x1e00;
@@ -155,7 +166,6 @@ int32 eth_init()
 			}
 
 			cmd=_in32(ETH_CTRL+CSR6);
-			_out32(ETH_CTRL+CSR6, cmd | 0x00002082);
 			return 1;
 		}
 		dev=dev->next;
