@@ -196,9 +196,10 @@ void keEntryMain(uint32 param)
 	int r;
 	_sti();
 
+
 	keLoadDriver(&keyboard_driver_object);
 	keLoadDriver(&console_driver_object);
-	keSetStd(0, open("console", "1"));
+	keSetStd(0, open("console", "0"));
 	keSetStd(1, 0);
 
 	initKeDebug();
@@ -216,6 +217,6 @@ void keEntryMain(uint32 param)
 	while(1)
 	{
 		keDelay(200);
-		release(&s);
+//		release(&s);
 	}
 }

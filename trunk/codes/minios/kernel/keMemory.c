@@ -89,7 +89,7 @@ void keHeapDump(struct heapmem * heap) {
   for (;;)
   {
     if(p_tmp_base->next==(struct header *)0x55AA5A5A)
-      printf("%08X[000055AA][%6d] *\n", p_tmp_base, p_tmp_base->size);
+      printf("%08X[55AA5A5A][%6d] *\n", p_tmp_base, p_tmp_base->size);
     else
       printf("%08X[%08X][%6d]\n", p_tmp_base, p_tmp_base->next, p_tmp_base->size);
     
