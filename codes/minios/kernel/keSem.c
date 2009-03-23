@@ -32,8 +32,6 @@ void release(struct semaphore * sem)
 		if(tb!=NULL)
 		{
 			keActiveTask(tb);
-			_sti();
-			keDoSchedNormal();
 		}else
 			sem->value=1;
 	}
@@ -57,8 +55,6 @@ void setevent(struct semaphore * sem)
 	if(tb!=NULL)
 	{
 		keActiveTask(tb);
-		_sti();
-		keDoSchedNormal();
 	}else
 		_sti();
 }

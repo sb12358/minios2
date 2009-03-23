@@ -68,9 +68,7 @@ void ethisr_handler()
 				continue;
 			if(senddesc[i].address1)
 			{
-				if(senddesc[i].status & 0x8000)
-					printf("Error %08x ", senddesc[i].status);
-				printf("Free %08x %08x", &(senddesc[i].address1), senddesc[i].address1);
+				printf("Free %08x", senddesc[i].address1);
 				keFree((void*)senddesc[i].address1);
 				senddesc[i].address1=0;
 				senddesc[i].control=0;
@@ -81,19 +79,15 @@ void ethisr_handler()
 	if(status & 0x40)
 	{
 		printf("RI ");
-		for(i=0;i<8;i++)
+
+		while(1)
 		{
-			uint8* buf;
-			if(recvdesc[i].status == 0x80000000)
-				continue;
-
-			buf=(uint8*)recvdesc[i].address1;
-
-			if(recvdesc[i].status & 0x20)
-				printf("eth %d bytes, protocol=%04x", recvdesc[i].status >> 16, buf[12]*256+buf[13]);
-			else
-				printf("802.3 %d bytes", recvdesc[i].status >> 16);
-			recvdesc[i].status=0x80000000;
+			if(recvdesc[rx_new].status == 0x80000000)
+				break;
+			printf("index=%d size=%d", rx_new, recvdesc[rx_new].status >> 16);
+			recvdesc[rx_new].status=0x80000000;
+			rx_new++;
+			rx_new%=8;
 		}
 	}
 	printf("\n");

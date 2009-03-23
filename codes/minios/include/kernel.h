@@ -128,3 +128,7 @@ void initKeDebug();
 int setbreadpoint(uint32 tid, uint32 eip, DEBUGCALLBACK fn);
 void removebreakpoint(int i);
 void dumpMemory(uint32 addr);
+
+uint16 htons(uint16 a);
+void netinit();
+void ArpSend(uint32 ip);

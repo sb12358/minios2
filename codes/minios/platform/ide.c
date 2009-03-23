@@ -120,6 +120,7 @@ uint32 ide_setfeture(uint8 feture, uint8 param)
 void pfIdeIsr()
 {
 	release(&waitdma);
+	keDoSched();
 }
 
 
