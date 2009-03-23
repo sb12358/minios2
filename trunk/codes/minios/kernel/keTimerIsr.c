@@ -42,7 +42,6 @@ void keTimeJobSched()
 			break;
 	}
 	_unlock();
-	setevent(&dpcevent);
 }
 
 uint32 keTimeJobRemove(uint32 timetoken)
@@ -145,12 +144,14 @@ void keDpcAppendItem(TASK_ENTRY entry, uint32 param)
 		item=&((*item)->next);
 	*item=job;
 	_unlock();
+	setevent(&dpcevent);
 }
 
 void keDpcJobInsert(TASK_ENTRY entry, uint32 param)
 {
 	keDpcAppendItem(entry, param);
 	setevent(&dpcevent);
+	keDoSchedNormal();
 }
 
 void keDpcProc(uint32 param)

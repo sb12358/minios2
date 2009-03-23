@@ -146,6 +146,10 @@ SOURCE=.\kernel\keMemory.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\kernel\keNet.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\kernel\keSched.c
 # End Source File
 # Begin Source File
