@@ -202,22 +202,19 @@ void keEntryMain(uint32 param)
 
 	keLoadDriver(&keyboard_driver_object);
 	keSetStd(1, NULL);
-	
 
 	initKeDebug();
 
 	printf("booting...\n");
-
 
 	keNewTask("dpcmain", keDpcProc, 0, 6, 0x4000);
 	pciInit();
 
 	r=keLoadDriver(&ide_driver_object);
 
-	keKernelHeapDump();
 	netinit();
 	r=keLoadDriver(&eth_driver_object);
-	ArpSend(0x0130670a);
+	ArpSend(inet_addr("10.103.48.151"));
 
 	initsemaphore(&s, 0);
 	keNewTask("kdebug", kdebug, 0, 8, 0x4000);

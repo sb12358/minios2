@@ -178,6 +178,10 @@ SOURCE=.\libc\stdio.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\libc\stdlib.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\libc\string.c
 # End Source File
 # End Group
@@ -219,6 +223,10 @@ SOURCE=.\include\stdarg.h
 # Begin Source File
 
 SOURCE=.\include\stdio.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\include\stdlib.h
 # End Source File
 # Begin Source File
 

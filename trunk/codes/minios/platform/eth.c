@@ -39,6 +39,8 @@ struct DEC21140_dev_extend
     char *description;
 	uint8 macAddr[6];
 	uint8 broadcastAddr[6];
+	int32 (*send)(struct DEC21140_dev_extend*, uint8*, uint32);
+	int32 (*recv)(struct DEC21140_dev_extend*, uint8*, uint32);
 
 	struct DEC21140_Descriptor_t recvdesc[8];
 	struct DEC21140_Descriptor_t senddesc[8];
@@ -53,7 +55,7 @@ struct DEC21140_dev_extend
 
 struct DEC21140_dev_extend* firstdev;
 
-void sendpacket(struct DEC21140_dev_extend *ext, uint8* buffer, int size)
+int sendpacket(struct DEC21140_dev_extend *ext, uint8* buffer, uint32 size)
 {
 	_lock();
 	ext->senddesc[ext->tx_new].address1=(uint32)buffer;
@@ -63,6 +65,7 @@ void sendpacket(struct DEC21140_dev_extend *ext, uint8* buffer, int size)
 	ext->tx_new%=8;
 	_unlock();
 	_out32(ext->ETH_CTRL+CSR1, 0);
+	return size;
 }
 
 void ethisr_handler()
@@ -94,6 +97,12 @@ void ethisr_handler()
 		{
 			if(ext->recvdesc[ext->rx_new].status == 0x80000000)
 				break;
+			if(ext->recv)
+			{
+				ext->recv(ext, (uint8*)ext->recvdesc[ext->rx_new].address1, 
+					ext->recvdesc[ext->rx_new].status>>16);
+			}
+
 			ext->recvdesc[ext->rx_new].status=0x80000000;
 			ext->rx_new++;
 			ext->rx_new%=8;
@@ -115,16 +124,16 @@ void sendsetupframe(struct DEC21140_dev_extend *ext)
 	ext->tx_new%=8;
 	_sti();
 
-	ext->macAddr[0]=0x9d;
-	ext->macAddr[1]=0x19;
-	ext->macAddr[2]=0xd0;
-	ext->macAddr[3]=0x4f;
-	ext->macAddr[4]=0x1e;
-	ext->macAddr[5]=0x00;
+	ext->macAddr[0]=0x00;
+	ext->macAddr[1]=0x03;
+	ext->macAddr[2]=0xFF;
+	ext->macAddr[3]=0xD1;
+	ext->macAddr[4]=0x19;
+	ext->macAddr[5]=0x9D;
 
-	*setup_frm++ = 0x1e00;
-	*setup_frm++ = 0xd04f;
-	*setup_frm++ = 0x9d19;
+	*setup_frm++ = ext->macAddr[5] + (ext->macAddr[4]<<8);
+	*setup_frm++ = ext->macAddr[3] + (ext->macAddr[2]<<8);
+	*setup_frm++ = ext->macAddr[1] + (ext->macAddr[0]<<8);
 	for (i = 1; i < 16; i++) {
 		*setup_frm++ = 0xffff;
 		*setup_frm++ = 0xffff;
@@ -160,6 +169,8 @@ int32 eth_init()
 			ext->description="DEC21140 10/100M Ethernet Adapter";
 			ext->rx_new=0;
 			ext->tx_new=0;
+			ext->send=sendpacket;
+			ext->recv=NULL;
 			memset(ext->broadcastAddr, 0xff, 6);
 			printf("ethenet controller's config space %P io port %04X\n", cfg, ext->ETH_CTRL);
 			
@@ -198,3 +209,4 @@ int32 eth_init()
 	}
 	return 0;
 }
+
