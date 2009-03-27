@@ -3,6 +3,7 @@
 #include <kernel.h>
 #include <string.h>
 #include <disasm.h>
+#include <net/netif.h>
 
 uint32 htol(char* hexstr)
 {
@@ -213,6 +214,7 @@ void keEntryMain(uint32 param)
 
 	r=keLoadDriver(&ide_driver_object);
 
+	keKernelHeapDump();
 	netinit();
 	r=keLoadDriver(&eth_driver_object);
 	ArpSend(0x0130670a);

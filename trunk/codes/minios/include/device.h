@@ -10,6 +10,7 @@ struct driver_object
 	void  (*close)(pvoid);
 	int32 (*read)(pvoid, uint8*, uint32);
 	int32 (*write)(pvoid, uint8*, uint32);
+	int32 (*invoke)(pvoid, uint8*, uint32);
 	int32 (*seek)(pvoid, uint32 offset);
 	int32 (*tell)(pvoid);
 	int32 (*ioctrl)(pvoid, uint32, uint8 *, uint32, uint8 *, uint32 *);

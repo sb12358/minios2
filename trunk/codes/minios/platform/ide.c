@@ -28,6 +28,7 @@ struct driver_object ide_driver_object={
 	ide_write,
 	NULL,
 	NULL,
+	NULL,
 	ide_ioctrl,
 	ide_status,
 	"ide"
