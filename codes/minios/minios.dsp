@@ -206,6 +206,10 @@ SOURCE=.\include\list.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\include\net\netif.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\include\platform.h
 # End Source File
 # Begin Source File

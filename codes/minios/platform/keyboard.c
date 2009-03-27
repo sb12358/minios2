@@ -17,6 +17,7 @@ struct driver_object keyboard_driver_object={
 	NULL,
 	NULL,
 	NULL,
+	NULL,
 	"keyboard"
 };
 

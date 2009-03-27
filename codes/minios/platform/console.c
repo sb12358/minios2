@@ -19,6 +19,7 @@ struct driver_object console_driver_object={
 	NULL,
 	NULL,
 	console_write,
+	NULL,
 	console_seek,
 	console_tell,
 	console_ioctrl,

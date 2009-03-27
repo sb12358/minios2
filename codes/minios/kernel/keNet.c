@@ -3,16 +3,11 @@
 #include <kernel.h>
 #include <stdio.h>
 #include <string.h>
-
+#include <list.h>
+#include <net/netif.h>
 #pragma pack(1)
 
-struct netdevice
-{
-	unsigned char macAddr[6];
-	unsigned char macAddrBroadcast[6];
-	unsigned char ipAddr[4];
-	unsigned char ipBroadcast[6];
-}netdev;
+LIST_HEAD(netifheader);
 
 struct mac
 {
@@ -36,29 +31,7 @@ struct arp
 
 void netinit()
 {
-	netdev.macAddr[0]=0x9d;
-	netdev.macAddr[1]=0x19;
-	netdev.macAddr[2]=0xd0;
-	netdev.macAddr[3]=0x4f;
-	netdev.macAddr[4]=0x1e;
-	netdev.macAddr[5]=0x00;
 
-	netdev.macAddrBroadcast[0]=0xff;
-	netdev.macAddrBroadcast[1]=0xff;
-	netdev.macAddrBroadcast[2]=0xff;
-	netdev.macAddrBroadcast[3]=0xff;
-	netdev.macAddrBroadcast[4]=0xff;
-	netdev.macAddrBroadcast[5]=0xff;
-
-	netdev.ipAddr[0]=10;
-	netdev.ipAddr[1]=103;
-	netdev.ipAddr[2]=48;
-	netdev.ipAddr[3]=155;
-
-	netdev.ipBroadcast[0]=255;
-	netdev.ipBroadcast[1]=255;
-	netdev.ipBroadcast[2]=255;
-	netdev.ipBroadcast[3]=255;
 }
 
 uint16 htons(uint16 a)
@@ -67,26 +40,44 @@ uint16 htons(uint16 a)
 	return (t[0]<<8)+t[1];
 }
 
-void sendpacket(uint8* buffer, int size);
+void sendpacket(struct net_device_extend *ext, uint8* buffer, int size);
 
 void ArpSend(uint32 ip)
 {
-	unsigned char *buffer=(unsigned char *)keMalloc(42);
-	struct mac* m=(struct mac*)buffer;
-	struct arp* a=(struct arp*)(buffer+14);
+	struct netif_inet* header=(struct netif_inet*)&netifheader;
+	if(header->next!=header)
+	{
+		struct netif_inet* netif=header->next;
+		struct net_device_extend *ext=netif->ext;
+		unsigned char *buffer=(unsigned char *)keMalloc(42);
+		struct mac* m=(struct mac*)buffer;
+		struct arp* a=(struct arp*)(buffer+14);
 
-	memcpy(m->dstmac, netdev.macAddrBroadcast, 6);
-	memcpy(m->srcmac, netdev.macAddr, 6);
-	m->protocol=htons(0x0806);
+		memcpy(m->dstmac, ext->broadcastAddr, 6);
+		memcpy(m->srcmac, ext->macAddr, 6);
+		m->protocol=htons(0x0806);
 
-	a->hardware=htons(0x0001);
-	a->protocol=htons(0x0800);
-	a->hardwaresize=6;
-	a->protocolsize=4;
-	a->opcode=htons(0x0001);
-	memcpy(a->srcmac, netdev.macAddr, 6);
-	memcpy(a->srcip, netdev.ipAddr, 4);
-	memset(a->dstmac, 0, 6);
-	memcpy(a->dstip, &ip, 4);
-	sendpacket(buffer, 42);
+		a->hardware=htons(0x0001);
+		a->protocol=htons(0x0800);
+		a->hardwaresize=6;
+		a->protocolsize=4;
+		a->opcode=htons(0x0001);
+		memcpy(a->srcmac, ext->macAddr, 6);
+		memcpy(a->srcip, netif->ipAddr, 4);
+		memset(a->dstmac, 0, 6);
+		memcpy(a->dstip, &ip, 4);
+		sendpacket(ext, buffer, 42);
+}	}
+
+void registerNetDevice(struct device_object* dev)
+{
+	struct netif_inet* netif=(struct netif_inet*)keMalloc(sizeof(struct netif_inet));
+	netif->dev=dev;
+	netif->ext=(struct net_device_extend *)dev->extend;
+	netif->ipAddr[0]=0x9B30670A;
+	netif->ipAddr[1]=0xFFFFFFFF;
+	netif->ipAddr[2]=0xFFFFFFFF;
+	netif->ipAddr[3]=0xFFFFFFFF;
+	netif->ipBroadcast=0xFFFFFFFF;
+	list_add_tail(netif, &netifheader);
 }
