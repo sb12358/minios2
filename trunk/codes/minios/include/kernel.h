@@ -71,6 +71,8 @@ struct semaphore
 };
 
 void initsemaphore(struct semaphore * sem, uint32 initial);
+void initmutex(struct semaphore * sem);
+void clearevent(struct semaphore * sem);
 void wait(struct semaphore * sem);
 void release(struct semaphore * sem);
 void waitevent(struct semaphore * sem);

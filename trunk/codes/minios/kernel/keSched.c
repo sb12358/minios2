@@ -50,7 +50,6 @@ struct taskblock * keTaskDequeue(struct taskblock ** header)
 
 	if(*header==NULL)
 		return NULL;
-	
 
 	p=*header;
 	*header=(*header)->next;
@@ -198,6 +197,7 @@ void keDoSched()
 	{
 		_sti();
 		_hlt();
+		_cli();
 		i=keSchedNextTask();
 	}						// not any task can be sched
 

@@ -8,53 +8,69 @@ void initsemaphore(struct semaphore * sem, uint32 initial)
 	sem->pendingtasks=NULL;
 }
 
+void initmutex(struct semaphore * sem)
+{
+	sem->value=1;
+	sem->pendingtasks=NULL;
+}
+
 void wait(struct semaphore * sem)
 {
-	_cli();
+	_lock();
 	if(sem->value==0)
 	{
 		kePendTask(&sem->pendingtasks, tasks[currentTaskId]);
-		_sti();
+		_unlock();
 		keDoSchedNormal();
-	}else
-		sem->value=0;
-	_sti();
+		_lock();
+	}
+	sem->value--;
+	_unlock();
 }
 
 void release(struct semaphore * sem)
 {
 	struct taskblock * tb;
-	_cli();
-	
+	_lock();
 	if(sem->value==0)
 	{
 		tb=keTaskDequeue(&sem->pendingtasks);
 		if(tb!=NULL)
-		{
 			keActiveTask(tb);
-		}else
-			sem->value=1;
 	}
-	_sti();
+	sem->value++;
+	_unlock();
+}
+
+void clearevent(struct semaphore * sem)
+{
+	sem->value=0;
 }
 
 void waitevent(struct semaphore * sem)
 {
-	_cli();
-	kePendTask(&sem->pendingtasks, tasks[currentTaskId]);
-	_sti();
-	keDoSchedNormal();
+	_lock();
+	if(sem->value==0)
+	{
+		kePendTask(&sem->pendingtasks, tasks[currentTaskId]);
+		_unlock();
+		keDoSchedNormal();
+		_lock();
+	}
+	sem->value=0;
+	_unlock();
 }
 
 void setevent(struct semaphore * sem)
 {
 	struct taskblock * tb;
-	_cli();
-	
-	tb=keTaskDequeue(&sem->pendingtasks);
-	if(tb!=NULL)
+	_lock();
+	if(sem->value==0)
 	{
-		keActiveTask(tb);
-	}else
-		_sti();
+		tb=keTaskDequeue(&sem->pendingtasks);
+		if(tb!=NULL)
+			keActiveTask(tb);
+	}
+	sem->value=1;
+	_unlock();
 }
