@@ -64,6 +64,11 @@ _inline void _int17()
 	_asm int 17;
 }
 
+_inline unsigned _int64 _cpuclk()
+{
+	  _asm RDTSC;
+}
+
 /*
 	hardware interrupt from 32 to 47
 	32:Clock

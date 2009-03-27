@@ -7,6 +7,8 @@ typedef unsigned short uint16;
 typedef short int16;
 typedef unsigned int uint32;
 typedef int int32;
+typedef unsigned _int64 uint64;
+typedef _int64 int64;
 typedef void* pvoid;
 
 #define NULL 0
