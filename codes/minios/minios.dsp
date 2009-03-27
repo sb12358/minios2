@@ -202,6 +202,10 @@ SOURCE=.\include\kernel.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\include\list.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\include\platform.h
 # End Source File
 # Begin Source File

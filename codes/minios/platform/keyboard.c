@@ -38,17 +38,17 @@ void keyboardEnqueue(uint8 key)
 	if((keyboardTail+1)==keyboardHead)
 		return;
 	keyboardQueue[keyboardTail++]=key;
-	setevent(&keyboardevent);
+	release(&keyboardevent);
 }
 
 uint8 keyboardDequeue()
 {
-	if(keyboardTail==keyboardHead) {
-		waitevent(&keyboardevent);
-		if(keyboardTail==keyboardHead)
-			return 0;
-	}
-	return keyboardQueue[keyboardHead++];
+	uint8 c;
+	wait(&keyboardevent);
+	if(keyboardTail==keyboardHead)
+		return 0;
+	c=keyboardQueue[keyboardHead++];
+	return c;
 }
 
 void pfKeyboardIsr()
@@ -191,9 +191,9 @@ uint8 keyboardGetChar()
 
 int32 keyboard_init()
 {
+	initsemaphore(&keyboardevent, 0);
 	_ISRVECT[33]=(uint32)pfKeyboardIsr;
 	keyboardLED();
-	initsemaphore(&keyboardevent, 0);
 	return 1;
 }
 

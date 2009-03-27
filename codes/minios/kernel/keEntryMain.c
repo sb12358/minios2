@@ -196,14 +196,18 @@ void keEntryMain(uint32 param)
 	int r;
 	_sti();
 
-	keLoadDriver(&keyboard_driver_object);
 	keLoadDriver(&console_driver_object);
 	keSetStd(0, open("console", "0"));
-	keSetStd(1, 0);
+
+	keLoadDriver(&keyboard_driver_object);
+	keSetStd(1, NULL);
+	
 
 	initKeDebug();
 
 	printf("booting...\n");
+
+
 	keNewTask("dpcmain", keDpcProc, 0, 6, 0x4000);
 	pciInit();
 
@@ -216,9 +220,9 @@ void keEntryMain(uint32 param)
 	initsemaphore(&s, 0);
 	keNewTask("kdebug", kdebug, 0, 8, 0x4000);
 	keNewTask("test1", test1, 0, 7, 0x4000);
+
 	while(1)
 	{
-		puts("*");
 		keDelay(200);
 //		release(&s);
 	}
