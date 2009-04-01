@@ -24,11 +24,18 @@ void *keHeapAlloc(struct heapmem * heap,  uint32 nbytes)
 	if(nbytes==0)
 		return 0;
 	
+	nbytes=(nbytes+3) & 0xFFFFFFFC;
+
     p_old_free = heap->p_free;
     while (heap->p_free->size < nbytes + head_len)
     {
         heap->p_free = heap->p_free->next;
-		Assert(heap->p_free != p_old_free, "Memory exhausted!");
+		if(heap->p_free == p_old_free)
+		{
+			printf("Memory exhausted! pid=%d\n", currentTaskId);
+			keHeapDump(heap);
+			while(1);
+		}
     }
     
     heap->p_free->size -= nbytes + head_len;
@@ -45,11 +52,21 @@ void keHeapFree(struct heapmem * heap,  void *pointer)
     struct header *bp = (struct header *)pointer;
     struct header *p = heap->p_base;
     
-    Assert(pointer!=NULL, "Cannot free NULL Pointer\n");
+	if(pointer==NULL)
+	{
+		printf("Cannot free NULL Pointer pid=%d\n", currentTaskId);
+		keHeapDump(heap);
+		while(1);
+	}
     
     bp--;
     
-    Assert(bp->next==(struct header *)0x55AA5A5A, "Memory block damaged\n");
+	if(bp->next!=(struct header *)0x55AA5A5A)
+	{
+		printf("Memory block damaged pid=%d\n", currentTaskId);
+		keHeapDump(heap);
+		while(1);
+	}
 
     bp->next=0;
     
@@ -63,8 +80,8 @@ void keHeapFree(struct heapmem * heap,  void *pointer)
     {
         bp->size += p->next->size + head_len;
         bp->next = p->next->next;
-    		if(heap->p_free==p->next)
-    			heap->p_free=bp;
+    	if(heap->p_free==p->next)
+    		heap->p_free=bp;
     }
     else
     {
@@ -74,8 +91,8 @@ void keHeapFree(struct heapmem * heap,  void *pointer)
     {
         p->size += bp->size + head_len;
         p->next = bp->next;
-     		if(heap->p_free==bp)
-    			heap->p_free=p;
+     	if(heap->p_free==bp)
+    		heap->p_free=p;
     }
     else
     {

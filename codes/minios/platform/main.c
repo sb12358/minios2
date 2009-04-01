@@ -81,8 +81,10 @@ void cpuInit()
 	for(i=0;i<256;i++)
 		_ISRVECT[i]=(uint32)generalprotectintr;
 							// init interrupt table
+
 	_loadidt();
 }
+
 
 void _stdcall main(unsigned long p1, unsigned long p2, unsigned long p3)
 {
@@ -90,7 +92,6 @@ void _stdcall main(unsigned long p1, unsigned long p2, unsigned long p3)
 	struct taskblock *task;
 	_cli();
 	cpuInit();
-
 	_ISRVECT[17]=(uint32)keDoSched;
 	_ISRVECT[32]=(uint32)keTimerIsr;
 
@@ -99,6 +100,5 @@ void _stdcall main(unsigned long p1, unsigned long p2, unsigned long p3)
 
 	task=keNewTask("main", keEntryMain, 0, 8, 0x4000);
 	currentTaskId=0;
-
 	_switch(&(task->esp), &oldesp);
 }

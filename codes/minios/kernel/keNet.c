@@ -9,6 +9,54 @@
 #pragma pack(1)
 
 LIST_HEAD(netifheader);
+struct heapmem * netheap;
+
+struct semaphore netevent;
+uint8 netmsgheader;
+uint8 netmsgtail;
+struct net_message{
+	uint32 msg;
+	uint32 param;
+}netmsg[256];
+
+int netInQueue(uint32 msg, uint32 param)
+{
+	struct net_message* m;
+
+	if(netmsgtail+1==netmsgheader)
+		return 0;
+
+	_lock();
+	m=&netmsg[netmsgtail];
+	m->msg=msg;
+	m->param=param;
+	netmsgtail++;
+	_unlock();
+	release(&netevent);
+}
+
+int netDeQueue(uint32 *msg, uint32 *param)
+{
+	struct net_message* m;
+
+	while(1)
+	{
+		wait(&netevent);
+		if(netmsgheader!=netmsgtail)
+			break;
+	}
+
+	_lock();
+	m=&netmsg[netmsgheader];
+	netmsgheader++;
+	*msg=m->msg;
+	*param=m->param;
+	_unlock();
+
+	return 1;
+
+}
+
 
 struct mac
 {
@@ -57,9 +105,27 @@ uint32 inet_addr(char *str)
 	return ret;
 }
 
-void netinit()
+void* netMalloc(uint32 nbytes)
 {
+	void *p;
+	_lock();
+	p = keHeapAlloc(netheap, nbytes);
+	_unlock();
+	return p;
+}
 
+void netFree(void *pointer)
+{
+	_lock();
+	keHeapFree(netheap, pointer);
+	_unlock();
+}
+
+void netHeapDump()
+{
+	_lock();
+	keHeapDump(netheap);
+	_unlock();
 }
 
 void sendpacket(struct net_device_extend *ext, uint8* buffer, int size);
@@ -72,7 +138,7 @@ void ArpSend(uint32 ip)
 	{
 		struct netif_inet* netif=header->next;
 		struct net_device_extend *ext=netif->ext;
-		unsigned char *buffer=(unsigned char *)keMalloc(42);
+		unsigned char *buffer=(unsigned char *)netMalloc(42);
 		struct mac* m=(struct mac*)buffer;
 		struct arp* a=(struct arp*)(buffer+14);
 
@@ -94,9 +160,9 @@ void ArpSend(uint32 ip)
 	}
 }
 
-void handleArpPacket(struct net_device_extend* dev, uint8 *buf, uint32 size)
+void handleArpPacket(struct netpacket* packet)
 {
-	struct arp* a=(struct arp*)(buf+14);
+	struct arp* a=(struct arp*)(packet->macPayload);
 	if(a->opcode==htons(2))
 	{
 		uint8* mac=a->srcmac;
@@ -104,34 +170,46 @@ void handleArpPacket(struct net_device_extend* dev, uint8 *buf, uint32 size)
 		printf("Arp reply: ");
 		printf("%d.%d.%d.%d is at:", ip[0], ip[1], ip[2], ip[3]);
 		printf("%02X-%02X-%02X-%02X-%02X-%02X\n", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+	}else if(a->opcode==htons(1))
+	{
+		uint8* mac=a->srcmac;
+		uint8* ip=a->dstip;
+		uint8* ip2=a->srcip;
+		printf("Arp request: %d.%d.%d.%d ", ip[0], ip[1], ip[2], ip[3]);
+		printf("tell %d.%d.%d.%d ", ip2[0], ip2[1], ip2[2], ip2[3]);
+		printf("%02X-%02X-%02X-%02X-%02X-%02X\n", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
 	}
 }
 
 int handlePacket(struct net_device_extend* dev, uint8 *buf, uint32 size)
 {
 	struct mac* m=(struct mac*)buf;
-	switch(htons(m->protocol))
-	{
-	case 0x0806:
-		handleArpPacket(dev, buf, size);
-		break;
-	default:
-		break;
-	}
+	struct netpacket* packet;
+	
+	if(m->protocol<htons(0x800))		/* It is not a eth packet */
+		return 0;
+
+	packet=(struct netpacket*)netMalloc(size+sizeof(struct netpacket));
+	memcpy((void*)(packet+1), buf, size);
+	packet->netif=dev->netif;
+	packet->packetBuf=(uint8*)(packet+1);
+	packet->macPayload=packet->packetBuf+14;
+	packet->macProtocol=htons(m->protocol);
+	if(netInQueue(PACKET_ARRIVED, (uint32)packet)==0)
+		netFree(packet);
 	return 1;
 }
 
-
 void registerNetDevice(struct device_object* dev)
 {
-	struct netif_inet* netif=(struct netif_inet*)keMalloc(sizeof(struct netif_inet));
+	struct netif_inet* netif=(struct netif_inet*)netMalloc(sizeof(struct netif_inet));
 	uint8*p;
 
 	netif->dev=dev;
 	netif->ext=(struct net_device_extend *)dev->extend;
 	netif->ext->recv=handlePacket;
 
-	netif->ipAddr[0]=0x9B30670A;
+	netif->ipAddr[0]=0x9B30670A;	/*10.103.48.155*/
 	netif->ipAddr[1]=0xFFFFFFFF;
 	netif->ipAddr[2]=0xFFFFFFFF;
 	netif->ipAddr[3]=0xFFFFFFFF;
@@ -143,4 +221,41 @@ void registerNetDevice(struct device_object* dev)
 	p=(uint8*)netif->ipAddr;
 	printf("  IP Address: %d.%d.%d.%d\n", p[0], p[1], p[2], p[3]);
 	list_add_tail(netif, &netifheader);
+	netif->ext->netif=netif;
 }
+
+void netEntryMain(uint32 p)
+{
+	uint32 msg;
+	uint32 param;
+
+	while(1)
+	{
+		netDeQueue(&msg, &param);
+
+		switch(msg)
+		{
+		case PACKET_ARRIVED:
+		{
+			struct netpacket*packet=(struct netpacket*)param;
+			if(packet->macProtocol==0x806)
+				handleArpPacket(packet);
+			netFree(packet);
+			break;
+		}
+		default:
+			break;
+		}
+	}
+}
+
+void netinit()
+{
+	netheap=(struct heapmem *)keMalloc(0x100000);
+	keHeapInit(netheap, 0x100000);
+	netmsgheader=0;
+	netmsgtail=0;
+	initsemaphore(&netevent, 0);
+	keNewTask("netEntryMain", netEntryMain, 0, 7, 0x4000);
+}
+

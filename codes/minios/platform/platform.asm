@@ -23,8 +23,9 @@ _ISRINT	dd IsrInt0, IsrInt1, IsrInt2, IsrInt3
 GDT_DATA db 0,0,0,0,0,0,0,0			;dummy
 	db 0ffh, 0ffh, 0, 0, 0, 9Ah, 0CFh, 0	;code seg
 	db 0ffh, 0ffh, 0, 0, 0, 92h, 0CFh, 0	;data seg
-GDT_48	dw 01ffh
+GDT_48	dw 01fh
 	dd offset GDT_DATA
+	dw 0
 
 IDT_DATA dd 0,0,0,0,0,0,0,0
 	dd 0,0,0,0,0,0,0,0
@@ -43,9 +44,9 @@ IDT_DATA dd 0,0,0,0,0,0,0,0
 	dd 0,0,0,0,0,0,0,0
 	dd 0,0,0,0,0,0,0,0
 
-IDT_48	dw 0fffh
+IDT_48	dw 01ffh
 	dd offset IDT_DATA
-
+	dw 0
 .code
 
 _switch proc
@@ -63,9 +64,9 @@ _loadgdt proc
 	mov eax, cr0
 	and eax, 7fffffffh
 	mov cr0, eax
-	db 0ffh
-	dw 08h
+	db 0EAh
 	dd jump32
+	dw 08h
 jump32:	
 	ret
 _loadgdt endp
