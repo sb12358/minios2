@@ -147,7 +147,10 @@ void kdebug(uint32 param)
 				break;
 			}
 			case 'h':
+				printf("==Kernel Heap===\n");
 				keKernelHeapDump();
+				printf("====Net Heap====\n");
+				netHeapDump();
 				break;
 			case '?':
 				puts("a size      Alloc size Memory From Kernel Heap\n");
@@ -199,7 +202,6 @@ void keEntryMain(uint32 param)
 
 	keLoadDriver(&console_driver_object);
 	keSetStd(0, open("console", "0"));
-
 	keLoadDriver(&keyboard_driver_object);
 	keSetStd(1, NULL);
 
@@ -218,8 +220,7 @@ void keEntryMain(uint32 param)
 
 	initsemaphore(&s, 0);
 	keNewTask("kdebug", kdebug, 0, 8, 0x4000);
-	keNewTask("test1", test1, 0, 7, 0x4000);
-
+	keNewTask("test1", test1, 0, 8, 0x4000);
 	while(1)
 	{
 		keDelay(200);

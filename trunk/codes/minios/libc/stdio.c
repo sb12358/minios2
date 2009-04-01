@@ -183,8 +183,9 @@ int sprintf( char *buffer, const char *fmt, ...)
 	return vsprintf(buffer, fmt, arglist);
 }
 
-struct taskblock **tasks;
-uint32 currentTaskId;
+extern struct taskblock **tasks;
+extern uint32 currentTaskId;
+extern struct device_object console_device_object[4];
 
 void stdwrite(char* buf, int len)
 {

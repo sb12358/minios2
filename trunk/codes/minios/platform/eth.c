@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <net/netif.h>
+#include <list.h>
 
 enum tulip_offsets {
 	CSR0=0,    CSR1=0x08, CSR2=0x10, CSR3=0x18, CSR4=0x20, CSR5=0x28,
@@ -36,11 +37,14 @@ struct DEC21140_Descriptor_t
 
 struct DEC21140_dev_extend
 {
+	struct DEC21140_dev_extend* next;
+	struct DEC21140_dev_extend* prev;
     char *description;
 	uint8 macAddr[6];
 	uint8 broadcastAddr[6];
 	int32 (*send)(struct DEC21140_dev_extend*, uint8*, uint32);
 	int32 (*recv)(struct DEC21140_dev_extend*, uint8*, uint32);
+	struct netif_inet* netif;
 
 	struct DEC21140_Descriptor_t recvdesc[8];
 	struct DEC21140_Descriptor_t senddesc[8];
@@ -53,7 +57,7 @@ struct DEC21140_dev_extend
 	uint32 INIT_LINE;
 };
 
-struct DEC21140_dev_extend* firstdev;
+LIST_HEAD(devheader);
 
 int sendpacket(struct DEC21140_dev_extend *ext, uint8* buffer, uint32 size)
 {
@@ -72,49 +76,51 @@ void ethisr_handler()
 {
 	int i;
 	uint32 status;
-	struct DEC21140_dev_extend* ext=firstdev;
-
-	status =_in32(ext->ETH_CTRL + CSR5);
-
-	if(status & 1)
+	struct DEC21140_dev_extend* ext;
+	list_for_each(ext, ((struct DEC21140_dev_extend*)&devheader))
 	{
-		for(i=0;i<8;i++)
+		status =_in32(ext->ETH_CTRL + CSR5);
+
+		if(status & 1)
 		{
-			if(ext->senddesc[i].status & 0x80000000)
-				continue;
-			if(ext->senddesc[i].address1)
+			for(i=0;i<8;i++)
 			{
-				keFree((void*)ext->senddesc[i].address1);
-				ext->senddesc[i].address1=0;
-				ext->senddesc[i].control=0;
-				ext->senddesc[i].status=0;
+				if(ext->senddesc[i].status & 0x80000000)
+					continue;
+				if(ext->senddesc[i].address1)
+				{
+					netFree((void*)ext->senddesc[i].address1);
+					ext->senddesc[i].address1=0;
+					ext->senddesc[i].control=0;
+					ext->senddesc[i].status=0;
+				}
 			}
 		}
-	}
-	if(status & 0x40)
-	{
-		while(1)
+		if(status & 0x40)
 		{
-			if(ext->recvdesc[ext->rx_new].status == 0x80000000)
-				break;
-			if(ext->recv)
+			while(1)
 			{
-				ext->recv(ext, (uint8*)ext->recvdesc[ext->rx_new].address1, 
-					ext->recvdesc[ext->rx_new].status>>16);
-			}
+				if(ext->recvdesc[ext->rx_new].status == 0x80000000)
+					break;
+				if(ext->recv)
+				{
+					ext->recv(ext, (uint8*)ext->recvdesc[ext->rx_new].address1, 
+						ext->recvdesc[ext->rx_new].status>>16);
+				}
 
-			ext->recvdesc[ext->rx_new].status=0x80000000;
-			ext->rx_new++;
-			ext->rx_new%=8;
+				ext->recvdesc[ext->rx_new].status=0x80000000;
+				ext->rx_new++;
+				ext->rx_new%=8;
+			}
 		}
+		_out32(ext->ETH_CTRL + CSR5, status | 0x0001ffff);
 	}
-	_out32(ext->ETH_CTRL + CSR5, status | 0x0001ffff);
 }
 
 void sendsetupframe(struct DEC21140_dev_extend *ext)
 {
 	int i;
-	uint32 *setup_frm = (uint32*)keMalloc(192);
+	uint32 *setup_frm = (uint32*)netMalloc(192);
 
 	_cli();
 	ext->senddesc[ext->tx_new].address1=(uint32)setup_frm;
@@ -161,7 +167,6 @@ int32 eth_init()
 			struct DEC21140_dev_extend *ext=(struct DEC21140_dev_extend *)(device+1);
 			device->driver=&eth_driver_object;
 			device->extend=ext;
-			firstdev=ext;
 
 			ext->ETH_CTRL = (uint16)(cfg->baseaddress[0]& ~3);
 			ext->ROM_ADDR = cfg->romaddr;
@@ -195,14 +200,16 @@ int32 eth_init()
 			memset(ext->senddesc, 0, sizeof(ext->senddesc));
 			ext->senddesc[7].control = ext->senddesc[7].control | 0x02000000;
 
+
 			_out32(ext->ETH_CTRL+CSR3, (uint32)ext->recvdesc);
 			_out32(ext->ETH_CTRL+CSR4, (uint32)ext->senddesc);
 			_out32(ext->ETH_CTRL+CSR7, 0xffffffff);
+			sendsetupframe(ext);
+			registerNetDevice(device);
+			list_add_tail(ext, &devheader);
 			ext->CMD=_in32(ext->ETH_CTRL+CSR6);
 			_out32(ext->ETH_CTRL+CSR6, ext->CMD | 0x00002082);
 
-			sendsetupframe(ext);
-			registerNetDevice(device);
 			return 1;
 		}
 		dev=dev->next;

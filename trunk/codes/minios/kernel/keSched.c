@@ -120,14 +120,12 @@ struct taskblock* keNewTask(char *name, TASK_ENTRY entry, uint32 param, uint32 p
 {
 	int i;
 	struct taskblock* newtask;
-
 	if(priority>15)
 		return 0;
 
 	i=keNewTaskId();
 	if(i==0xFFFFFFFF)
 		return 0;
-
 	if(stacksize==0)
 		stacksize=0x4000;
 
