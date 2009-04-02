@@ -167,8 +167,7 @@ void handleArpPacket(struct netpacket* packet)
 	{
 		uint8* mac=a->srcmac;
 		uint8* ip=a->srcip;
-		printf("Arp reply: ");
-		printf("%d.%d.%d.%d is at:", ip[0], ip[1], ip[2], ip[3]);
+		printf("Arp reply: %d.%d.%d.%d is at:", ip[0], ip[1], ip[2], ip[3]);
 		printf("%02X-%02X-%02X-%02X-%02X-%02X\n", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
 	}else if(a->opcode==htons(1))
 	{
