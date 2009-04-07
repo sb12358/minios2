@@ -1,3 +1,5 @@
+// copyright by me
+
 #ifndef KERNAL_TYPES_INCLUDED
 #define KERNAL_TYPES_INCLUDED
 
