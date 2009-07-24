@@ -216,7 +216,7 @@ void keEntryMain(uint32 param)
 
 	netinit();
 	r=keLoadDriver(&eth_driver_object);
-	ArpSend(inet_addr("10.103.48.151"));
+	ArpSend(inet_addr("10.103.63.41"));
 
 	initsemaphore(&s, 0);
 	keNewTask("kdebug", kdebug, 0, 8, 0x4000);

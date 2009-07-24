@@ -75,13 +75,26 @@ store_remain:
 	mov	al, cl
 	out	dx, al		;out 1f2h, sectorsToRead
 
-	inc	dl
 	mov	al, 40h
 	shl	eax, 24
-	add	eax, ebx
-	out	dx, eax		;out 1f3h, ADDR | 0x40000000
+	add	eax, ebx	;out 1f3h, ADDR | 0x40000000
 
-	add	dl, 4
+	inc	dl
+	out	dx, al		;out 1f3
+
+	inc	dl
+	ror	eax, 8
+	out	dx, al		;out 1f4
+
+	inc	dl
+	ror	eax, 8
+	out	dx, al		;out 1f5
+
+	inc	dl
+	ror	eax, 8
+	out	dx, al		;out 1f6h
+
+	inc	dl
 	mov	al, 20h
 	out	dx, al		;out 1f7h, 20h
 

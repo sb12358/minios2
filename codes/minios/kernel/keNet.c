@@ -208,7 +208,7 @@ void registerNetDevice(struct device_object* dev)
 	netif->ext=(struct net_device_extend *)dev->extend;
 	netif->ext->recv=handlePacket;
 
-	netif->ipAddr[0]=0x9B30670A;	/*10.103.48.155*/
+	netif->ipAddr[0]=0x9B3f670A;	/*10.103.63.155*/
 	netif->ipAddr[1]=0xFFFFFFFF;
 	netif->ipAddr[2]=0xFFFFFFFF;
 	netif->ipAddr[3]=0xFFFFFFFF;
